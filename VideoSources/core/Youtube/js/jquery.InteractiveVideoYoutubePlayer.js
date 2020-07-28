@@ -32,21 +32,10 @@ function onYouTubeIframeAPIReady() {
 						il.InteractiveVideoPlayerComments.fillEndTimeSelector(il.InteractiveVideoPlayerAbstract.duration(player_id));
 						il.InteractiveVideoSubtitle.initializeSubtitleTracks(player_id);
 
-						function seekInPlayer(player_id) {
-							if (il.InteractiveVideo.last_time > 0 &&
-									(il.InteractiveVideo.last_time <
-											il.InteractiveVideoPlayerAbstract.currentTime(player_id) + 1 ||
-											il.InteractiveVideoPlayerAbstract.currentTime(player_id) >
-											il.InteractiveVideo.last_time + 1)) {
-								clearInterval(interval);
-								il.InteractiveVideoPlayerFunction.seekingEventHandler(player_id);
-							}
-						}
-
 						function repeatingYoutubeFunc() {
 						if(il.InteractiveVideo.last_time != il.InteractiveVideoPlayerAbstract.currentTime(player_id)) {
 								il.InteractiveVideo.last_time = il.InteractiveVideoPlayerAbstract.currentTime(player_id);
-								seekInPlayer(player_id);
+								il.InteractiveVideoSourceYoutube.seekInPlayer(player_id);
 							}
 							clearInterval(repeat_interval);
 							repeat_interval = setTimeout(repeatingYoutubeFunc, 500);
@@ -79,12 +68,11 @@ function onYouTubeIframeAPIReady() {
 								clearInterval(interval);
 								il.InteractiveVideo.last_time = il.InteractiveVideoPlayerAbstract.currentTime(player_id);
 								clearInterval(repeat_interval);
-		console.log(e, 'pause')
 								repeat_interval = setTimeout(repeatingYoutubeFunc, 500);
 							}
 							// 3 (buffering)
 							else if (e.data === 3) {
-								seekInPlayer(player_id);
+								il.InteractiveVideoSourceYoutube.seekInPlayer(player_id);
 							}
 						});
 					}
@@ -102,3 +90,53 @@ function onPlayerStateChange(event)
 		done = true;
 	}
 }
+
+il.InteractiveVideoSourceYoutube = (function (scope) {
+	'use strict';
+
+	let pub = {}, pro = {}, pri = {
+ };
+
+	pub.seekInPlayer = function(player_id) {
+		if(pro.checkIfSeekEventShouldBeTriggered(player_id))
+		{
+			clearInterval(interval);
+			il.InteractiveVideoPlayerFunction.seekingEventHandler(player_id);
+		}
+	};
+
+	pro.checkIfSeekEventShouldBeTriggered = function(player_id) {
+		if ( pro.lastTimeIsGreaterAsZero() &&
+				( pro.lastTimeIsSmallerThanCurrentTime(player_id) 
+						|| pro.lastTimeIsGreaterThanCurrentTime(player_id) 
+						|| pro.currentTimeEqualsZero(player_id)
+				) 
+			 )
+		{
+			return true;
+		}
+		return false;
+	};
+
+	pro.lastTimeIsGreaterAsZero = function() {
+		return il.InteractiveVideo.last_time >= 0;
+	};
+
+	pro.lastTimeIsSmallerThanCurrentTime = function(player_id) {
+		return il.InteractiveVideo.last_time <
+				il.InteractiveVideoPlayerAbstract.currentTime(player_id) + 1;
+	};
+
+	pro.lastTimeIsGreaterThanCurrentTime = function(player_id) {
+		return il.InteractiveVideoPlayerAbstract.currentTime(player_id) >
+				il.InteractiveVideo.last_time + 1;
+	};
+
+	pro.currentTimeEqualsZero = function(player_id) {
+		return il.InteractiveVideoPlayerAbstract.currentTime(player_id) === 0
+	};
+
+	pub.protect = pro;
+	return pub;
+
+}(il));
