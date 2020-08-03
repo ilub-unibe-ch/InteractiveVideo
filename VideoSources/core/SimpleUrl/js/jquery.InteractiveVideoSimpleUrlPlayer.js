@@ -13,34 +13,32 @@ $( document ).ready(function() {
 				il.InteractiveVideo.last_stopPoint = -1;
 				il.InteractiveVideoSubtitle.initializeSubtitleTracks(player_id);
 
-				il.InteractiveVideo[player_id].player = new MediaElementPlayer("#" + player_id, {
+				il.InteractiveVideo[player_id].player = new MediaElementPlayer(player_id, {
 
 					timerRate:         50,
 					enablePluginDebug: false,
+					stretching: "responsive",
 
 					success: function (media) {
-
-						media.addEventListener('loadeddata', function () {
-							player = $("video#" + player_id)[0];
-
-							il.InteractiveVideoPlayerAbstract.config[player_id] = {
-								pauseCallback:          (function () {
-									player.pause(player_id);
-								}),
-								playCallback:           (function () {
-									player.play(player_id);
-								}),
-								durationCallback:       (function () {
-									return player.duration;
-								}),
-								currentTimeCallback:    (function () {
-									return player.currentTime;
-								}),
-								setCurrentTimeCallback: (function (time) {
-									player.setCurrentTime(time, player_id);
-								})
-							};
-
+						player = $("#" + player_id)[0];
+						il.InteractiveVideoPlayerAbstract.config[player_id] = {
+							pauseCallback:          (function () {
+								player.pause(player_id);
+							}),
+							playCallback:           (function () {
+								player.play(player_id);
+							}),
+							durationCallback:       (function () {
+								return player.duration;
+							}),
+							currentTimeCallback:    (function () {
+								return player.currentTime;
+							}),
+							setCurrentTimeCallback: (function (time) {
+								player.setCurrentTime(time, player_id);
+							})
+						};
+						media.addEventListener('loadedmetadata', function () {
 							il.InteractiveVideoPlayerComments.fillEndTimeSelector(il.InteractiveVideoPlayerAbstract.duration(player_id));
 						}, false);
 
