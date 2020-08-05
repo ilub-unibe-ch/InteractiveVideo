@@ -1397,9 +1397,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 
 		if(!isset($_POST['comment_id']) || !is_array($_POST['comment_id']) || !count($_POST['comment_id']))
 		{
-			ilUtil::sendFailure($this->lng->txt('select_one'));
-			$this->editComments();
-			return;
+			ilUtil::sendFailure($this->lng->txt('select_one'), true);
+            $this->ctrl->redirect($this, 'editComments');
 		}
 
 		require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
@@ -1600,6 +1599,12 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 			$comment_time_end = $form->getInput('comment_time_end');
 			$this->objComment->setCommentTimeEnd($comment_time_end);
 			$this->objComment->update();
+			
+			if($comment_time_end <= $comment_time && $comment_time_end !== 0){
+                ilUtil::sendFailure($this->plugin->txt('endtime_warning'));
+                $form->setValuesByPost();
+                return $this->editMyComment($form);
+            }
 
 			$this->editMyComments();
 		}
@@ -1624,9 +1629,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 
 		if(!isset($_POST['comment_id']) || !is_array($_POST['comment_id']) || !count($_POST['comment_id']))
 		{
-			ilUtil::sendFailure($this->lng->txt('select_one'));
-			$this->editComments();
-			return;
+			ilUtil::sendFailure($this->lng->txt('select_one'), true);
+            $this->ctrl->redirect($this, 'editMyComments');
 		}
 
 		require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
@@ -2296,7 +2300,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$comment_id = (int)$_POST['comment_id'];
 		$form_values = array();
 
-		if(!$chk =  SimpleChoiceQuestion::existUserAnswer($comment_id))
+		if(!$chk =  SimpleChoiceQuestion::existAnswer($comment_id))
 		{
 			$this->updateQuestion();
 		}
