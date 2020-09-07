@@ -51,7 +51,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		let css_class, value;
 		let player_data = scope.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id);
 		
-		if(pro.isBuildListElementAllowed(player_data, username))
+		if(pro.isBuildListElementAllowed(player_data, username) && 	comment.is_table_of_content === "0")
 		{
 			css_class = pro.getCSSClassForListElement();
 			value =	'<li class="list_item_' + comment.comment_id + ' fadeOut ' + css_class + '">' +
@@ -211,6 +211,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 			element = '<li><a href="#">' + element + '</a></li>';
 			drop_down_list.append(element);
 		}
+		pro.registerTabEvent(player_id);
 	};
 
 	pub.fillEndTimeSelector = function(seconds)
@@ -223,6 +224,128 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		let obj = pro.secondsToTimeCode(seconds);
 //Todo: fix this, this id does not exists anywhere
 		pro.preselectValueOfEndTimeSelection(obj, $('#comment_time_end'));
+	};
+	
+	pro.registerTabEvent = function(player_id)
+	{
+		let player_data = scope.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id);
+		
+		$('.iv_tab_comments_' + player_id).on('click', function() {
+			let time = il.InteractiveVideoPlayerAbstract.currentTime(player_id);
+			let filter_element = $('#show_all_comments_' + player_id);
+			pro.displayCommentsOrToc(true, player_id);
+
+			if(filter_element.prop('checked')){
+				il.InteractiveVideoPlayerComments.rebuildCommentsViewIfShowAllIsActive(player_id);
+			} else {
+				pub.replaceCommentsAfterSeeking(time, player_id);
+			}
+		});
+		
+		$('.iv_tab_toc_' + player_id).on('click', function() {
+			pro.displayCommentsOrToc(false, player_id);
+			pro.buildToc(player_id);
+		});
+
+		if(player_data.disable_comment_stream === "1" || player_data.show_toc_first === "1") {
+			pro.displayCommentsOrToc(false, player_id);
+			pro.buildToc(player_id);
+		} else {
+			pro.displayCommentsOrToc(true, player_id);
+		}
+	};
+
+	pro.displayCommentsOrToc = function(displayComments, player_id){
+		let comments_block = $('#ul_scroll_' + player_id);
+		let toc_block = $('#ul_toc_' + player_id);
+
+		if(displayComments) {
+			comments_block.css('display', 'block');
+			toc_block.css('display', 'none');
+			pro.activateTocOrCommentTab(false, player_id);
+		} else {
+			comments_block.css('display', 'none');
+			toc_block.css('display', 'block');
+			pro.activateTocOrCommentTab(true, player_id);
+		}
+	};
+	
+	pro.activateTocOrCommentTab = function(toc, player_id){
+		let comments_block = $('.iv_tab_comments_' + player_id);
+		let toc_block = $('.iv_tab_toc_' + player_id);
+		
+		if(toc) {
+			comments_block.removeClass('active');
+			toc_block.addClass('active');
+		} else {
+			toc_block.removeClass('active');
+			comments_block.addClass('active');
+		}
+
+	};
+	
+	pro.buildToc = function(player_id) {
+		let player_data = scope.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id);
+		let j_object	= $('#ilInteractiveVideoComments_' + player_id + ' #ul_toc_' + player_id);
+		let element		='';
+
+		j_object.html('');
+		pri.cssIterator = 0;
+		for (let key in player_data.comments_toc) {
+			let obj = player_data.comments_toc[key];
+			if (obj.comment_text !== null)
+			{
+				element = pro.buildTocElement(obj, player_id, player_data);
+				j_object.append(element);
+			}
+		}
+
+		pro.registerTocClickListener(player_id);
+		pub.highlightTocItem(player_id, player_data.last_time);
+	};
+	
+	pro.buildTocElement = function(comment, player_id, player_data) {
+		let comment_title = ' ';
+
+		if(comment.comment_title !== '') {
+			comment_title = ' ' + comment.comment_title + ' <br/> ';
+		}
+
+		return '<li class="toc_item toc_item_' + comment.comment_id +'" data-toc-time="' + comment.comment_time + '"><div class="toc-inner"><h5>' + 
+			 pro.buildCommentTimeHtml(comment.comment_time, comment.is_interactive, player_id)  +
+			 comment_title + '</h5>' + 
+			 '<div class="toc_description">' + comment.comment_text + '</div>' +
+			'</div></li>';
+	};
+
+	pro.registerTocClickListener = function(player_id) {
+		$('.toc_item').off('click');
+		$('.toc_item').on('click', function() {
+			if($(this).find('.toc_description').css('display') === 'block'){
+				$(this).find('.toc_description').hide();
+				$(this).find('.toc_description').removeClass('tocManualOverride');
+			} else {
+				$('.toc_description').hide();
+				$(this).find('.toc_description').show();
+				$(this).find('.toc_description').addClass('tocManualOverride');
+			}
+		});
+	};
+	
+	pub.highlightTocItem = function(player_id, current_time){
+		
+		$( ".toc_item" ).each(function( index ) {
+			let toc_time = $( this ).data('toc-time');
+			let toc_time_next = $( this ).next().data('toc-time');
+			if(toc_time <= current_time
+				&& !(toc_time_next < current_time)) {
+				$('.toc_item').removeClass('activeToc');
+				$(this).addClass('activeToc');
+				$('.toc_description').hide();
+				$('.tocManualOverride').show();
+				$(this).find('.toc_description').show();
+			}
+		});
 	};
 
 	pro.isBuildListElementAllowed = function(player_data, username)
@@ -370,6 +493,9 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 	
 	pub.getCommentRepliesHtml = function(reply)
 	{
+		if(reply.is_table_of_content === "1") {
+			return '';
+		}
 		return '<div class="reply_comment reply_comment_' + reply.comment_id + '">' + pub.buildCommentUsernameHtml(reply.user_name, reply.is_interactive) + ': ' + reply.comment_text + ' ' + pro.appendPrivateHtml(reply.is_private) + '</div>';
 	};
 

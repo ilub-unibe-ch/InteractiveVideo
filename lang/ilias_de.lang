@@ -136,12 +136,14 @@ db_update_failed#:#Datenbank-Update schlug fehl: %s
 task_switch#:#Aufgabenstellung aktivieren
 task_switch_info#:#Aufgabenstellung aktivieren
 task#:#Aufgabenstellung
-lp_mode_title_by_questions#:#Fragen beantwortet 
+lp_mode_title_by_questions#:#Fragen korrekt beantwortet 
 lp_mode_desc_by_questions#:#Das Objekt gilt als 'Bearbeitet', wenn für alle definierten Fragen eine 'richtige' Antwort gewählt wurde. Falls keine Fragen konfiguriert wurden, gilt das Objekt beim Erreichen der Endposition des Videos als 'Bearbeitet'.
 lp_users#:#Benutzer
 lp_matrix#:#Matrixansicht
 lp_summary#:#Zusammenfassung
 lp_settings#:#Einstellungen
+lp_mode_title_by_all_answered_questions#:#Fragen beantwortet 
+lp_mode_desc_by_all_answered_questions#:#Das Objekt gilt als 'Bearbeitet', wenn für alle definierten Fragen eine Antwort gewählt wurde, unabhängig von der Korrektheit. Falls keine Fragen konfiguriert wurden, gilt das Objekt beim Erreichen der Endposition des Videos als 'Bearbeitet'.
 select_at_least_one#:#Bitte wählen Sie mindestens eine Quelle aus.
 back_to#:#zurück zu
 back_to_title#:#Wollen Sie zum Urprungsobjekt %s (%s) zurückkehren?
@@ -198,4 +200,11 @@ sure_delete_subtitle#:#Sind Sie sicher das Sie diesen Untertitel löschen wollen
 you_need_a_short_title#:#Sie müssen einen Kurztitel eintragen!
 no_toolbar#:#Toolbar deaktivieren
 no_toolbar_info#:#Es wird keine Toolbar mit Filtern angezeigt
-
+is_table_of_content#:#Inhaltsverzeichnis
+toc#:#Inhaltsverzeichnis
+show_toc_first#:#Zeige Inhaltsverzeichnis als erstes
+show_toc_first_info#:#Zeige Inhaltsverzeichnis zuerst an
+disable_comment_stream#:#Deaktiviere Kommentarstream
+disable_comment_stream_info#:#Deaktiviere Kommentarstream
+insert_chapter#:#Kapitel einfügen
+edit_chapter#:#Kapitel editieren

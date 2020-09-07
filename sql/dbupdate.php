@@ -956,3 +956,52 @@ if(!$ilDB->tableColumnExists('rep_robj_xvid_objects', 'no_toolbar'))
 <?php
 $ilDB->addPrimaryKey('rep_robj_xvid_objects', array('obj_id'));
 ?>
+<#52>
+<?php
+if($ilDB->tableExists('rep_robj_xvid_comments'))
+{
+    if(!$ilDB->tableColumnExists('rep_robj_xvid_comments', 'is_table_of_content'))
+    {
+        $ilDB->addTableColumn('rep_robj_xvid_comments', 'is_table_of_content',
+            array(
+                'type'    => 'integer',
+                'length'  => '1',
+                'notnull' => true,
+                'default' => 0));
+    }
+}
+?>
+<#53>
+<?php
+if(!$ilDB->tableColumnExists('rep_robj_xvid_objects', 'show_toc_first'))
+{
+    $ilDB->addTableColumn('rep_robj_xvid_objects', 'show_toc_first',
+        array(
+            'type'    => 'integer',
+            'length'  => 1,
+            'notnull' => true,
+            'default' => 0)
+    );
+}
+?>
+<#54>
+<?php
+if(!$ilDB->tableColumnExists('rep_robj_xvid_objects', 'disable_comment_stream'))
+{
+    $ilDB->addTableColumn('rep_robj_xvid_objects', 'disable_comment_stream',
+        array(
+            'type'    => 'integer',
+            'length'  => 1,
+            'notnull' => true,
+            'default' => 0)
+    );
+}
+?>
+<#55>
+<?php
+$ilDB->addIndex('rep_robj_xvid_comments', ['is_interactive', 'obj_id'], 'i2');
+?>
+<#56>
+<?php
+$ilDB->addIndex('rep_robj_xvid_question', ['comment_id', 'type'], 'i2');
+?>
