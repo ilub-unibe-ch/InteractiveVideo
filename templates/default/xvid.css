@@ -449,6 +449,7 @@ body.cke_editable{
     top: 2px;
     width: 15px;
     z-index: 33;
+    pointer-events: none;
 }
 
 .iv_tab_navigation .active{
@@ -473,4 +474,18 @@ body.cke_editable{
 
 .toc_item{
     cursor: pointer;
+}
+
+.compulsory_question{
+    float:right;
+    margin-right: 10px;
+    font-style: italic;
+}
+
+.modal-header.compulsory{
+    background-color: #a2cde6;
+}
+
+.ilFormFooter .iv_comment_buttons{
+    text-align: left !important;
 }

@@ -22,8 +22,8 @@ root_create_xvid#:#Neues Interaktives Video anlegen
 cat_create_xvid#:#Neues Interaktives Video anlegen
 interactive#:#Interaktive
 tutor#:#Tutor
-questions_comments#:#Fragen und Kommentare
-questions_comments_new#:#Fragen und öffentliche Kommentare
+questions_comments#:#Fragen , Kapitel und Kommentare
+questions_comments_new#:#Fragen, Kapitel und öffentliche Kommentare
 questions_comments_sub_tab#:#Verwalten
 sure_delete_comments#:#Sind Sie sicher, dass Sie die gewählten Kommentare löschen möchten?
 video_file#:#Video
@@ -136,13 +136,13 @@ db_update_failed#:#Datenbank-Update schlug fehl: %s
 task_switch#:#Aufgabenstellung aktivieren
 task_switch_info#:#Aufgabenstellung aktivieren
 task#:#Aufgabenstellung
-lp_mode_title_by_questions#:#Fragen korrekt beantwortet 
+lp_mode_title_by_questions#:#Fragen korrekt beantwortet
 lp_mode_desc_by_questions#:#Das Objekt gilt als 'Bearbeitet', wenn für alle definierten Fragen eine 'richtige' Antwort gewählt wurde. Falls keine Fragen konfiguriert wurden, gilt das Objekt beim Erreichen der Endposition des Videos als 'Bearbeitet'.
 lp_users#:#Benutzer
 lp_matrix#:#Matrixansicht
 lp_summary#:#Zusammenfassung
 lp_settings#:#Einstellungen
-lp_mode_title_by_all_answered_questions#:#Fragen beantwortet 
+lp_mode_title_by_all_answered_questions#:#Fragen beantwortet
 lp_mode_desc_by_all_answered_questions#:#Das Objekt gilt als 'Bearbeitet', wenn für alle definierten Fragen eine Antwort gewählt wurde, unabhängig von der Korrektheit. Falls keine Fragen konfiguriert wurden, gilt das Objekt beim Erreichen der Endposition des Videos als 'Bearbeitet'.
 select_at_least_one#:#Bitte wählen Sie mindestens eine Quelle aus.
 back_to#:#zurück zu
@@ -208,3 +208,7 @@ disable_comment_stream#:#Deaktiviere Kommentarstream
 disable_comment_stream_info#:#Deaktiviere Kommentarstream
 insert_chapter#:#Kapitel einfügen
 edit_chapter#:#Kapitel editieren
+comment_table_title#:#Kommentar / Fragentext
+compulsory_question#:#Verpflichtende Frage
+compulsory#:#Verpflichtend
+compulsory_question_info#:#Diese Frage muss beantwortet werden, bevor das Video weiter geschaut werden kann

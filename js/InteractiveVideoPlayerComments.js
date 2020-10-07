@@ -244,12 +244,12 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		
 		$('.iv_tab_toc_' + player_id).on('click', function() {
 			pro.displayCommentsOrToc(false, player_id);
-			pro.buildToc(player_id);
+			pub.buildToc(player_id);
 		});
 
 		if(player_data.disable_comment_stream === "1" || player_data.show_toc_first === "1") {
 			pro.displayCommentsOrToc(false, player_id);
-			pro.buildToc(player_id);
+			pub.buildToc(player_id);
 		} else {
 			pro.displayCommentsOrToc(true, player_id);
 		}
@@ -284,7 +284,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 
 	};
 	
-	pro.buildToc = function(player_id) {
+	pub.buildToc = function(player_id) {
 		let player_data = scope.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id);
 		let j_object	= $('#ilInteractiveVideoComments_' + player_id + ' #ul_toc_' + player_id);
 		let element		='';
@@ -319,13 +319,13 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 	};
 
 	pro.registerTocClickListener = function(player_id) {
-		$('.toc_item').off('click');
-		$('.toc_item').on('click', function() {
+		$('.toc-inner').off('click');
+		$('.toc-inner').on('click', function() {
 			if($(this).find('.toc_description').css('display') === 'block'){
 				$(this).find('.toc_description').hide();
 				$(this).find('.toc_description').removeClass('tocManualOverride');
 			} else {
-				$('.toc_description').hide();
+				//$('.toc_description').hide();
 				$(this).find('.toc_description').show();
 				$(this).find('.toc_description').addClass('tocManualOverride');
 			}
@@ -409,7 +409,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		{
 			time = Math.abs(Math.round(time) - 0.1);
 		}
-		return 	'<time class="time"> ' +
+		return 	'<time class="time" data-time="' + time + '"> ' +
 				'<a onClick="il.InteractiveVideoPlayerAbstract.jumpToTimeInVideo(' + time + ', ' + player_id + '); return false;">'+
 				pro.secondsToTimeCode(display_time)  +
 				'</a>' +
@@ -483,7 +483,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 
 		if(replies !== undefined && replies.length > 0)
 		{
-			for (var i  = 0; i < replies.length; i++)
+			for (let i  = 0; i < replies.length; i++)
 			{
 				value += pub.getCommentRepliesHtml(replies[i]);
 			}
@@ -508,10 +508,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		{
 			private_comment = ' (' + language.private_text + ')';
 		}
-		else
-		{
-			private_comment = '';
-		}
+
 		return '<span class="private_text">'+ private_comment + '</span> ';
 	};
 
