@@ -80,13 +80,14 @@
 .scroll-text ul li:before {
     background: #fff;
     border-radius: 2px;
-    bottom: -35px;
+    bottom: -20px;
     box-shadow: 0 0 3px rgba(0,0,0,0.2);
     content: "";
     height: 120%;
     left: -30px;
     position: absolute;
     width: 3px;
+    cursor: default;
 }
 .scroll-text ul li:after {
     background: #fff;
@@ -453,11 +454,11 @@ body.cke_editable{
 }
 
 .iv_tab_navigation .active{
-    background-color: rgba(76, 101, 134, 0.3) !important;
+    background-color: white !important;
 }
 
 .iv_tab {
-    border: 1px solid lightgray !important;
+    border-radius: 0.5em 0.5em 0 0 !important;
 }
 
 .iv-tabs{
@@ -476,6 +477,10 @@ body.cke_editable{
     cursor: pointer;
 }
 
+.toc_arrow{
+    float: right
+}
+
 .compulsory_question{
     float:right;
     margin-right: 10px;
@@ -488,4 +493,8 @@ body.cke_editable{
 
 .ilFormFooter .iv_comment_buttons{
     text-align: left !important;
+}
+
+li.toc_item > div > h5 > time {
+    padding-right: 20px;
 }

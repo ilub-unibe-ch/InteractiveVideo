@@ -247,6 +247,10 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 			pub.buildToc(player_id);
 		});
 
+		if(player_data.disable_comment_stream === "1" ){
+			let toolbar = $('.ivToolbar_' + player_id)
+			toolbar.css('display', 'none');
+		}
 		if(player_data.disable_comment_stream === "1" || player_data.show_toc_first === "1") {
 			pro.displayCommentsOrToc(false, player_id);
 			pub.buildToc(player_id);
@@ -308,12 +312,18 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 		let comment_title = ' ';
 
 		if(comment.comment_title !== '') {
-			comment_title = ' ' + comment.comment_title + ' <br/> ';
+			comment_title = ' ' + comment.comment_title;
 		}
 
-		return '<li class="toc_item toc_item_' + comment.comment_id +'" data-toc-time="' + comment.comment_time + '"><div class="toc-inner"><h5>' + 
+		let comment_text_exists_class = 'no_description';
+		let add_span_arrow = '';
+		if(comment.comment_text != ''){
+			comment_text_exists_class = 'description_exists';
+			add_span_arrow = '<span class="toc_arrow glyphicon glyphicon-triangle-right"></span>';
+		}
+		return '<li class="toc_item toc_item_' + comment.comment_id +' ' + comment_text_exists_class + '" data-toc-time="' + comment.comment_time + '"><div class="toc-inner"><h5>' +
 			 pro.buildCommentTimeHtml(comment.comment_time, comment.is_interactive, player_id)  +
-			 comment_title + '</h5>' + 
+			 comment_title + add_span_arrow + '</h5>' +
 			 '<div class="toc_description">' + comment.comment_text + '</div>' +
 			'</div></li>';
 	};
@@ -324,11 +334,14 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 			if($(this).find('.toc_description').css('display') === 'block'){
 				$(this).find('.toc_description').hide();
 				$(this).find('.toc_description').removeClass('tocManualOverride');
+				$(this).parent().removeClass('tocManualOverride');
 			} else {
 				//$('.toc_description').hide();
 				$(this).find('.toc_description').show();
 				$(this).find('.toc_description').addClass('tocManualOverride');
+				$(this).parent().addClass('tocManualOverride');
 			}
+			pro.changeArrowForTocItem(player_id);
 		});
 	};
 	
@@ -344,6 +357,25 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 				$('.toc_description').hide();
 				$('.tocManualOverride').show();
 				$(this).find('.toc_description').show();
+			}
+		});
+		pro.changeArrowForTocItem(player_id);
+	};
+
+	pro.changeArrowForTocItem = function(player_id){
+
+		$( ".toc_item" ).each(function( index ) {
+			if($(this).hasClass('description_exists')){
+				let span = $(this).find('.toc_arrow');
+
+				if($(this).hasClass('activeToc') || $(this).hasClass('tocManualOverride')){
+					console.log('change', span.attr('class'))
+					span.removeClass('glyphicon-triangle-right');
+					span.addClass('glyphicon-triangle-bottom');
+				} else {
+					span.addClass('glyphicon-triangle-right');
+					span.removeClass('glyphicon-triangle-bottom');
+				}
 			}
 		});
 	};
