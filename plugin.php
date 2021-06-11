@@ -9,7 +9,7 @@ $version = '2.5.1';
 // run with the plugin
 
 $ilias_min_version = '6.0.0';
-$ilias_max_version = '6.99';
+$ilias_max_version = '7.99';
 
 
 // optional, but useful: Add one or more responsible persons and a contact email
