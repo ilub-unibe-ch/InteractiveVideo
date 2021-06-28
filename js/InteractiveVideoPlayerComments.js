@@ -49,12 +49,16 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 	pub.buildListElement = function (player_id, comment, time, username)
 	{
 		let css_class, value;
+		let list_item_id = 'list_item_' + comment.comment_id;
+		let comment_not_already_rendered = $('.' + list_item_id).length;
 		let player_data = scope.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id);
-		
-		if(pro.isBuildListElementAllowed(player_data, username) && 	comment.is_table_of_content === "0")
+		if(pro.isBuildListElementAllowed(player_data, username)
+			&& comment.is_table_of_content === "0"
+			&& comment_not_already_rendered === 0
+		)
 		{
 			css_class = pro.getCSSClassForListElement();
-			value =	'<li class="list_item_' + comment.comment_id + ' fadeOut ' + css_class + '">' +
+			value =	'<li class="' + list_item_id + ' fadeOut ' + css_class + '">' +
 				'<div class="message-inner">' +
 							pro.buildCommentUserImage(player_data, comment)                   +
 							'<div class="comment_user_data">' + pub.buildCommentUsernameHtml(username, comment.is_interactive) +
@@ -369,7 +373,6 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 				let span = $(this).find('.toc_arrow');
 
 				if($(this).hasClass('activeToc') || $(this).hasClass('tocManualOverride')){
-					console.log('change', span.attr('class'))
 					span.removeClass('glyphicon-triangle-right');
 					span.addClass('glyphicon-triangle-bottom');
 				} else {

@@ -1,18 +1,4 @@
-$( document ).ready(function() {
-
-	$('#addQuestion').show();
-
-	if(IVQuestionCreator.JSON.length === 0)
-	{
-		il.InteractiveVideoQuestionCreator.appendEmptyJSON();
-	}
-	il.InteractiveVideoQuestionCreator.Init();
-	$('.question_type').val(IVQuestionCreator.type);
-	InteractiveVideoQuestionCreator.protect.showHideFormElementsPointsForNeutralAnswers();
-});
-
-
-il.InteractiveVideoQuestionCreator = (function () {
+InteractiveVideoQuestionCreator = (function () {
 	'use strict';
 
 	let pub = {}, pro = {};
@@ -22,7 +8,9 @@ il.InteractiveVideoQuestionCreator = (function () {
 			let pos = parseInt($(this).attr('meta'), 10);
 			IVQuestionCreator.JSON[pos].answer = $(this).val();
 		});
-
+		$('#show_best_solution').on('click', function (){
+			pro.showHideFormElementsForReflectionType();
+		});
 		$('.correct_solution').on('click', function (){
 			let pos = parseInt($(this).attr('meta'), 10);
 			let bool= 0;
@@ -97,6 +85,9 @@ il.InteractiveVideoQuestionCreator = (function () {
 			$('#il_prop_cont_show_response_frequency').hide();
 			$('#il_prop_cont_neutral_type').hide();
 			$('#il_prop_cont_show_comment_field').show();
+			if( $('#show_best_solution').is(':checked')){
+				$('#subform_show_best_solution').show();
+			}
 		}
 		else
 		{
@@ -106,6 +97,7 @@ il.InteractiveVideoQuestionCreator = (function () {
 			$('#il_prop_cont_show_response_frequency').show();
 			$('#il_prop_cont_neutral_type').show();
 			$('#il_prop_cont_show_comment_field').hide();
+			$('#subform_show_best_solution').hide();
 		}
 	};
 
@@ -123,6 +115,7 @@ il.InteractiveVideoQuestionCreator = (function () {
 				$('.correct_solution').show();
 				$('#il_prop_cont_show_correct_icon').show();
 				$('#il_prop_cont_feedback_one_wrong').show();
+				$('#il_prop_cont_show_best_solution').show();
 				$('#answer_table').find('th').eq(1).show();
 			}
 			else
@@ -136,6 +129,7 @@ il.InteractiveVideoQuestionCreator = (function () {
 				$('.correct_solution').hide();
 				$('#il_prop_cont_feedback_one_wrong').hide();
 				$('#il_prop_cont_show_correct_icon').hide();
+				$('#il_prop_cont_show_best_solution').hide();
 				$('#answer_table').find('th').eq(1).hide();
 			}
 		}
@@ -199,3 +193,16 @@ il.InteractiveVideoQuestionCreator = (function () {
 	return pub;
 
 }());
+
+$( document ).ready(function() {
+
+	$('#addQuestion').show();
+
+	if(IVQuestionCreator.JSON.length === 0)
+	{
+		InteractiveVideoQuestionCreator.appendEmptyJSON();
+	}
+	InteractiveVideoQuestionCreator.Init();
+	$('.question_type').val(IVQuestionCreator.type);
+	InteractiveVideoQuestionCreator.protect.showHideFormElementsPointsForNeutralAnswers();
+});

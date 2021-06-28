@@ -564,7 +564,6 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 			$table_data[$counter]['user_id']			= $row['user_id'];
 			$table_data[$counter]['title']				= $row['comment_title'];
 			$table_data[$counter]['comment_text']		= $row['comment_text'];
-			$table_data[$counter]['is_table_of_content']= $row['is_table_of_content'];
 			if($strip_tags){
 				$table_data[$counter]['comment_text'] = strip_tags($row['comment_text']);
 			}
@@ -578,7 +577,7 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 			{
 				$table_data[$counter]['is_tutor']			= $row['is_tutor'];
 				$table_data[$counter]['is_interactive']		= $row['is_interactive'];
-                $table_data[$counter]['compulsory']       = $row['compulsory_question'];
+                $table_data[$counter]['compulsory']         = $row['compulsory_question'] ? '1' : '0';
 			}
 			$type = 'comment';
 			if($row['is_interactive'] == "1") {
@@ -624,8 +623,6 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 			$table_data[$counter]['title']		= $row['comment_title'];
 			//	$table_data[$counter]['user_id']			= $row['user_id'];
 			$table_data[$counter]['comment_text']		= $row['comment_text'];
-			$table_data[$counter]['is_table_of_content'] = $row['is_table_of_content'];
-            $table_data[$counter]['compulsory']         = xvidUtils::yesNoString($row['compulsory_question']);
 			if($row['is_private'] == 1)
 			{
 				$table_data[$counter]['is_private'] = ilInteractiveVideoPlugin::getInstance()->txt('private');
@@ -701,7 +698,7 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 
 	/**
 	 * @param $comment_id
-	 * @return string
+	 * @return array
 	 */
 	public function getCommentTextById($comment_id)
 	{
@@ -710,12 +707,12 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 		 */
 		global $ilDB;
 
-		$res = $ilDB->queryF('SELECT comment_text FROM ' . self::TABLE_NAME_COMMENTS . ' WHERE comment_id = %s',
+		$res = $ilDB->queryF('SELECT comment_text, comment_title FROM ' . self::TABLE_NAME_COMMENTS . ' WHERE comment_id = %s',
 			array('integer'), array($comment_id));
 
 		$row = $ilDB->fetchAssoc($res);
 
-		return (string)$row['comment_text'];
+		return ['text' => $row['comment_text'], 'title' => $row['comment_title']];
 	}
 
 	/**

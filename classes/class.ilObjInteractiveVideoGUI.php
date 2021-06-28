@@ -434,7 +434,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$question->setVariable('CORRECT_SOLUTION', 	$plugin->txt('correct_solution'));
 		if($question_id > 0)
 		{
-			$question->setVariable('JSON', $ajax_object->getJsonForQuestionId($question_id));
+			$question->setVariable('JSON', $ajax_object->getAnswersForQuestionId($question_id));
 			$question->setVariable('QUESTION_TYPE', $simple_choice->getTypeByQuestionId($question_id));
 			$question->setVariable('QUESTION_TEXT', $simple_choice->getQuestionTextQuestionId($question_id));
 		}
@@ -518,6 +518,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$config_tpl->setVariable('FEEDBACK_JUMP_TEXT', $plugin->txt('feedback_jump_text'));
 		$config_tpl->setVariable('LEARNING_RECOMMENDATION_TEXT', $plugin->txt('learning_recommendation'));
 		$config_tpl->setVariable('MORE_INFORMATION_TEXT', $plugin->txt('more_informations'));
+		$config_tpl->setVariable('SOLUTION_TEXT', $plugin->txt('solution'));
+		$config_tpl->setVariable('REPEAT_TEXT', $plugin->txt('repeat'));
 		$config_tpl->setVariable('ALREADY_ANSWERED_TEXT', $plugin->txt('already_answered'));
 		$config_tpl->setVariable('COMPULSORY', $plugin->txt('compulsory_question'));
 		$config_tpl->setVariable('QUESTION_TEXT', $plugin->txt('question'));
@@ -528,11 +530,14 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$config_tpl->setVariable('SWITCH_OFF', $plugin->txt('switch_off'));
 		$config_tpl->setVariable('SAVE', $plugin->txt('save'));
 		$config_tpl->setVariable('ADD_COMMENT', $plugin->txt('insert_comment'));
+		$config_tpl->setVariable('SHOW_BEST_SOLUTION', $plugin->txt('show_best_solution'));
+		$config_tpl->setVariable('AT_LEAST_ONE_ANSWER', $plugin->txt('at_least_one_answer'));
 		$config_tpl->setVariable('IS_CHRONOLOGIC_VALUE', $this->object->isChronologic());
 		$config_tpl->setVariable('AUTO_RESUME_AFTER_QUESTION', $this->object->isAutoResumeAfterQuestion());
 		$config_tpl->setVariable('FIXED_MODAL', $this->object->isFixedModal());
 		$config_tpl->setVariable('SHOW_TOC_FIRST', $this->object->getShowTocFirst());
 		$config_tpl->setVariable('DISABLE_COMMENT_STREAM', $this->object->getDisableCommentStream());
+		$config_tpl->setVariable('HAS_TRACKS', $this->getSubtitleDataAndFilesForJson());
 		$config_tpl->setVariable('HAS_TRACKS', $this->getSubtitleDataAndFilesForJson());
 		$ck_editor = new ilTemplate("tpl.ckeditor_mathjax.html", true, true, $plugin->getDirectory());
 		$mathJaxSetting = new ilSetting('MathJax');
@@ -1466,7 +1471,13 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		{
 			foreach($post_ids as $comment_id)
 			{
-				$confirm->addItem('comment_id[]', $comment_id, $this->object->getCommentTextById($comment_id));
+			    $texts = $this->object->getCommentTextById($comment_id);
+			    if(strlen($texts['title']) > 0){
+			        $text = $texts['title'];
+                } else {
+                    $text = $texts['text'];
+                }
+				$confirm->addItem('comment_id[]', $comment_id, $text);
 			}
 
 			$tpl->setContent($confirm->getHTML());
@@ -1780,7 +1791,13 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		{
 			foreach($post_ids as $comment_id)
 			{
-				$confirm->addItem('comment_id[]', $comment_id, $this->object->getCommentTextById($comment_id));
+                $texts = $this->object->getCommentTextById($comment_id);
+                if(strlen($texts['title']) > 0){
+                    $text = $texts['title'];
+                } else {
+                    $text = $texts['text'];
+                }
+                $confirm->addItem('comment_id[]', $comment_id, $text);
 			}
 
 			$tpl->setContent($confirm->getHTML());
@@ -2343,6 +2360,15 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$this->appendRepositorySelector($feedback_one_wrong, 'feedback_wrong_obj');
 		$form->addItem($feedback_one_wrong);
 
+        $show_best_solution = new ilCheckboxInputGUI($plugin->txt('show_best_solution'), 'show_best_solution');
+        $show_best_solution->setInfo($plugin->txt('show_best_solution_info'));
+
+        $show_best_solution_text = xvidUtils::constructTextAreaFormElement('best_solution_text', 'show_best_solution_text');
+        $show_best_solution_text->setInfo($plugin->txt('best_solution_text_info'));
+        $show_best_solution->addSubItem($show_best_solution_text);
+
+        $form->addItem($show_best_solution);
+
 		$show_response_frequency = new ilCheckboxInputGUI($plugin->txt('show_response_frequency'), 'show_response_frequency');
 		$show_response_frequency->setInfo($plugin->txt('show_response_frequency_info'));
 		$form->addItem($show_response_frequency);
@@ -2537,6 +2563,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$values['jump_correct_ts']			= $question_data['question_data']['jump_correct_ts'];
 		$values['feedback_one_wrong']		= $question_data['question_data']['feedback_one_wrong'];
 		$values['show_response_frequency']	= $question_data['question_data']['show_response_frequency'];
+		$values['show_best_solution']	    = $question_data['question_data']['show_best_solution'];
+		$values['show_best_solution_text']  = $question_data['question_data']['show_best_solution_text'];
 		$values['is_jump_wrong']			= $question_data['question_data']['is_jump_wrong'];
 		$values['show_wrong_icon']			= $question_data['question_data']['show_wrong_icon'];
 		$values['jump_wrong_ts']			= $question_data['question_data']['jump_wrong_ts'];
@@ -2677,6 +2705,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$question->setJumpWrongTs((int)$form->getInput('jump_wrong_ts'));
 
 		$question->setShowResponseFrequency((int)$form->getInput('show_response_frequency'));
+		$question->setShowBestSolution((int)$form->getInput('show_best_solution'));
+		$question->setShowBestSolutionText(ilUtil::stripSlashes($form->getInput('show_best_solution_text')));
 		$question->setRepeatQuestion((int)$form->getInput('repeat_question'));
 		$question->setCompulsoryQuestion((int)$form->getInput('compulsory_question'));
 		$question->setReflectionQuestionComment((int)$form->getInput('show_comment_field'));
@@ -2698,7 +2728,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$question = new ilTemplate("tpl.simple_questions.html", true, true, ilInteractiveVideoPlugin::getInstance()->getDirectory());
 		if($question_id > 0)
 		{
-			$question->setVariable('JSON', $ajax_object->getJsonForQuestionId($question_id));
+			$question->setVariable('JSON', $ajax_object->getAnswersForQuestionId($question_id));
 			$question->setVariable('QUESTION_TYPE', $simple_choice->getTypeByQuestionId($question_id));
 		}
 		else
@@ -3148,7 +3178,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$csvoutput = "";
 		foreach ($csv as $row)
 		{
-			$csvoutput .= join($row, $separator) . "\n";
+			$csvoutput .= join($separator, $row) . "\n";
 		}
 		ilUtil::deliverData($csvoutput, $this->object->getTitle() .  ".csv");
 	}
@@ -3176,6 +3206,8 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		array_push($head_row, $plugin->txt('comment'));
 		array_push($head_row, $plugin->txt('tutor'));
 		array_push($head_row, $plugin->txt('interactive'));
+		array_push($head_row, $plugin->txt('compulsory'));
+		array_push($head_row, $plugin->txt('type'));
 
 		array_push($csv, ilUtil::processCSVRow($head_row, TRUE, $separator) );
 		foreach ($data as $key => $row)
@@ -3190,7 +3222,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$csvoutput = "";
 		foreach ($csv as $row)
 		{
-			$csvoutput .= join($row, $separator) . "\n";
+			$csvoutput .= join($separator, $row) . "\n";
 		}
 		ilUtil::deliverData($csvoutput, $this->object->getTitle() .  ".csv");
 	}
