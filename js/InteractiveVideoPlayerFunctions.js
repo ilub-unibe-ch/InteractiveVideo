@@ -113,7 +113,7 @@ il.InteractiveVideoPlayerFunction = (function (scope) {
 				if(current_time >= object.time) {
 					il.InteractiveVideoPlayerAbstract.pause(player_id);
 					il.InteractiveVideoPlayerAbstract.setCurrentTime(parseInt(object.time, 10) + 0.1, player_id);
-					il.InteractiveVideoQuestionViewer.getQuestionPerAjax(object.comment_id, player_id);
+					il.InteractiveVideoQuestionViewer.getQuestionPerAjax(object.comment_id, player_id, true);
 					return false;
 				}
 			}
@@ -186,7 +186,7 @@ il.InteractiveVideoPlayerFunction = (function (scope) {
 
 		if (is_interactive === 1 && $.inArray(comment.comment_id, player_data.ignore_questions) === -1) {
 			stop_video = 1;
-			il.InteractiveVideoQuestionViewer.getQuestionPerAjax(comment.comment_id, player);
+			il.InteractiveVideoQuestionViewer.getQuestionPerAjax(comment.comment_id, player, true);
 		}
 		else if (is_interactive === 1) 
 		{
@@ -286,10 +286,38 @@ il.InteractiveVideoPlayerFunction = (function (scope) {
 					let reply = {'comment_text' : comment_text, 'is_interactive' : 0, 'is_private' : is_private, 'user_name' : scope.InteractiveVideo[player_id].username, 'comment_id' : 'non_existent'};
 					let html = scope.InteractiveVideoPlayerComments.getCommentRepliesHtml(reply);
 					$('.list_item_' + comment_id).find('.comment_replies').append(html);
-					$('#ilQuestionModal').modal('hide');
-					pub.refreshMathJaxView();
+					pub.decideSolutionHandlingForReflectionQuestion(comment_id, player_id);
 				}
 			});
+		});
+	};
+
+	pub.decideSolutionHandlingForReflectionQuestion = function(comment_id, player_id) {
+		let question = il.InteractiveVideoQuestionViewer.QuestionObject;
+		if(question.show_best_solution === "1" && question.show_best_solution_text.length >= 0){
+			let reflection_solution = '<input id="reflection_solution" class="btn btn-default btn-sm" value="' +  il.InteractiveVideo.lang.show_best_solution + '" '+ 'type="submit">';
+			let best_solution_element = '<div class="iv_show_best_solution_reflection iv_best_solution_hidden">' +
+				'<div class="reflection_best_solution_title">' + il.InteractiveVideo.lang.solution + ': </div>' +
+				'<div class="reflection_best_solution_text">' + question.show_best_solution_text + '</div>' +
+				'</div>';
+			$('.question_center').append($(best_solution_element))
+			$('#question_reflection_buttons_bellow_form').append(reflection_solution)
+			pro.registerReflectionBestSolutionListener(comment_id, player_id);
+		} else {
+			$('#ilQuestionModal').modal('hide');
+			pub.refreshMathJaxView();
+		}
+	};
+
+	pro.registerReflectionBestSolutionListener = function(comment_id, player_id)
+	{
+		let reflection_solution_btn = $('#reflection_solution');
+		reflection_solution_btn.off('click');
+		reflection_solution_btn.on('click', function () {
+			reflection_solution_btn.prop('disabled', true);
+			$('.submit_comment_form').remove();
+			$('.iv_show_best_solution_reflection').removeClass('iv_best_solution_hidden')
+			il.InteractiveVideoQuestionViewer.showBestSolutionForReflectionIsClicked(comment_id, player_id);
 		});
 	};
 
