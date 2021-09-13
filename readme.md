@@ -1,7 +1,7 @@
 - [InteractiveVideo](#interactivevideo)
   * [ILIAS compatibility](#ilias-compatibility)
   * [Important notice](#important-notice)
-  * [Changes in Version 2.5.1](#changes-in-version-251)
+  * [Changes in Version 2.6.0](#changes-in-version-260)
   * [Repositories connected to the InteractiveVideo Plugin](#repositories-connected-to-the-interactivevideo-plugin)
   * [Installation Instructions](#installation-instructions)
     + [Workaround patch for making the Interactive Videos work with the Web Access Checker](#workaround-patch-for-making-the-interactive-videos-work-with-the-web-access-checker)
@@ -23,7 +23,7 @@ ILIAS Interactive Video Plugin
 ## ILIAS compatibility
 Since there are a lot of changes in ILIAS 6, there will be a new branch '6_x' which is compatible with ILIAS 6, for older ILIAS versions you can still use the master branch.
 
-## Changes in Version 2.5.1
+## Changes in Version 2.6.0
 * Compulsory questions
 * Automatic scrolling if show all comments is active
 * New Learning Progress mode
@@ -33,6 +33,7 @@ Since there are a lot of changes in ILIAS 6, there will be a new branch '6_x' wh
 ## Repositories connected to the InteractiveVideo Plugin
 * [COPage Plugin for InteractiveVideo References in LearningModules](https://github.com/DatabayAG/InteractiveVideoReference)
 * [Video Source Plugin for Vimeo](https://github.com/DatabayAG/InteractiveVideoVimeo)
+* [Video Source Plugin for Opencast](https://github.com/DatabayAG/InteractiveVideoOpenCast)
 * [Video Source Plugin for FAU Video Platform](https://github.com/ilifau/InteractiveVideoFauVideoPortal)
 
 ## Installation Instructions
