@@ -2395,7 +2395,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$warning_dialog = new ilTemplate("tpl.question_edit_modal.html", true, true, ilInteractiveVideoPlugin::getInstance()->getDirectory());
 		$warning_dialog->setVariable('INFO_TEXT', $plugin->txt('save_without_correct_detail') );
 		$warning_dialog->setVariable('SAVE_ANYWAY', $plugin->txt('save_anyway') );
-		$warning_dialog->setVariable('CANCEL', $plugin->txt('CANCEL') );
+		$warning_dialog->setVariable('CANCEL', $plugin->txt('cancel') );
 		$modal->setBody($warning_dialog->get());
 		$mod = new ilCustomInputGUI('', '');
 		$mod->setHtml($modal->getHTML());
