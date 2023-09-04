@@ -1,1 +1,37 @@
-<div id="{PLAYER_ID}" data-youtube-id="{YOUTUBE_ID}"></div>
+<style>
+	#ilInteractiveVideo {
+		float: none;
+		clear: both;
+		position: relative;
+	}
+	.ilInteractiveVideoPlayerContainer{
+		position: relative;
+		padding-bottom: 56.25%;
+		padding-top: 30px;
+		height: 0;
+		overflow: hidden;
+	}
+	.ilInteractiveVideoPlayerContainer iframe {
+		top: 0;
+		left: 0;
+		width: 100%;
+		padding-top:15px;
+		position: absolute;
+		border: 0;
+		height: 100%;
+	}
+	.ilInteractiveVideoPlayerContainer {
+		text-align: center;
+	}
+</style>
+<script>
+	var interactiveVideoYoutubeId = "{YOUTUBE_ID}";
+</script>
+<!-- TODO: fix marker editing -->
+<div>
+	<div id="ilInteractiveVideoTag"></div>
+	<div class="iv_metadata" data-plyr-player-id="{PLAYER_ID}">
+		<div id="{PLAYER_ID}" class="ilInteractiveVideo" data-plyr-provider="youtube" data-plyr-embed-id="{YOUTUBE_ID}"></div>
+	</div>
+
+</div>
