@@ -1,7 +1,7 @@
 - [InteractiveVideo](#interactivevideo)
   * [ILIAS compatibility](#ilias-compatibility)
   * [Important notice](#important-notice)
-  * [Changes in Version 2.6.0](#changes-in-version-260)
+  * [Changes in Version 3.0.0](#changes-in-version-300)
   * [Repositories connected to the InteractiveVideo Plugin](#repositories-connected-to-the-interactivevideo-plugin)
   * [Installation Instructions](#installation-instructions)
     + [Workaround patch for making the Interactive Videos work with the Web Access Checker](#workaround-patch-for-making-the-interactive-videos-work-with-the-web-access-checker)
@@ -21,19 +21,30 @@
 ILIAS Interactive Video Plugin
 
 ## ILIAS compatibility
-Since there are a lot of changes in ILIAS 6, there will be a new branch '6_x' which is compatible with ILIAS 6, for older ILIAS versions you can still use the master branch.
+- If you are looking for a ILIAS 6 or ILIAS 7 compatible version of the plugin, please use the master branch.
+- If you are looking for a ILIAS 5.2-5.4 compatible version, please use the release_2 branch.
+- For even older ILIAS versions, please use the release_1 branch.
+ 
+## Changes in version 3.0.0
+1. [Reply to comments](https://www.ilias.de/docu/goto_docu_wiki_wpage_4967_1357.html)
+2. Changed video library to [plyr](https://github.com/sampotts/plyr)
+3. Development Feature: [SVG marker for videos](https://www.ilias.de/docu/goto_docu_wiki_wpage_4971_1357.html)
 
-## Changes in Version 2.6.0
+ ## Changes in Version 2.5.1
 * Compulsory questions
+* Table of contents
 * Automatic scrolling if show all comments is active
 * New Learning Progress mode
-* Table of contents
+
+## Important notice
+If you upgrade to the 2.x version of the InteractiveVideo you can not go back to version 1.x, because there are migration steps which alter the database schema.
+
+## Changes in earlier versions
 * [Complete Changelog](https://github.com/DatabayAG/InteractiveVideo/blob/master/CHANGELOG.md)
 
 ## Repositories connected to the InteractiveVideo Plugin
 * [COPage Plugin for InteractiveVideo References in LearningModules](https://github.com/DatabayAG/InteractiveVideoReference)
 * [Video Source Plugin for Vimeo](https://github.com/DatabayAG/InteractiveVideoVimeo)
-* [Video Source Plugin for Opencast](https://github.com/DatabayAG/InteractiveVideoOpenCast)
 * [Video Source Plugin for FAU Video Platform](https://github.com/ilifau/InteractiveVideoFauVideoPortal)
 
 ## Installation Instructions
@@ -43,7 +54,7 @@ Since there are a lot of changes in ILIAS 6, there will be a new branch '6_x' wh
 4. Search the **InteractiveVideo** plugin in the list of plugin and choose **Activate** from the **Actions** drop down.
 
 ### Workaround patch for making the Interactive Videos work with the Web Access Checker
-Simply insert the following line into the file 'Services/MediaObjects/classes/class.ilObjMediaObject.php' at round about line number 1511, which should read like this in the original:
+Simply insert the following line into the file 'Services/MediaObjects/classes/class.ilObjMediaObject.php' at round about line number 1445, which should read like this in the original:
 
 	case "mep":
 		$obj_id = $id;
@@ -60,6 +71,18 @@ That's it.
 
 # What is it for?
 The InteractiveVideo Plugin for ILIAS gives you the possibility to create a video object, where your students can communicate in a asynchronous way. Please note that this is *NOT* a chat. They can leave notes on different timestamps in the video for other students to read, or only for themselves. Further a tutor can insert questions on various positions in the video for the students to answer. At the moment three questions types are supported single and multiple choice and a reflective type. 
+
+## Add SVG Marker Select Form
+![Add SVG Marker Select Form](https://databayag.github.io/InteractiveVideo/2.5.x/new_marker_feature_1.png)
+
+## Add SVG Marker Select Position
+![Add SVG Marker Select Position](https://databayag.github.io/InteractiveVideo/2.5.x/new_marker_feature_2.png)
+
+## Edit/Create Screen for Comments
+![Edit Comment Screen](https://databayag.github.io/InteractiveVideo/2.5.x/new_edit_screen_comments.png)
+
+## Marker and Replies in the question and comment table
+![Question and Comments Table](https://databayag.github.io/InteractiveVideo/2.5.x/marker_and_replies.png)
 
 ## Interactive Video Main View
 ![Main View](https://databayag.github.io/InteractiveVideo/2.0.x/1.png)

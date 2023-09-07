@@ -158,7 +158,7 @@ il.InteractiveVideoQuestionViewer = (function (scope) {
 
 		$(pri.classes.modal_body).append('<div class="modal_feedback"><div class="modal_reflection_footer"></div></div>', '');
 		if(parseInt(pub.QuestionObject.reflection_question_comment, 10) === 1) {
-			pro.appendSelfReflectionCommentForm(player_id, player);
+			pro.appendSelfReflectionCommentForm(player_id);
 		} else if(parseInt(pub.QuestionObject.show_best_solution, 10) === 1) {
 			let html = '<div id="question_reflection_buttons_bellow_form"></div>';
 			$(pri.classes.modal_body).append(html);
@@ -180,7 +180,7 @@ il.InteractiveVideoQuestionViewer = (function (scope) {
 		});
 	};
 	
-	pro.appendSelfReflectionCommentForm = function(player_id, player)
+	pro.appendSelfReflectionCommentForm = function(player_id)
 	{
 		let comment_id = 'text_reflection_comment_'+ pub.comment_id ;
 		let footer = $('.modal_reflection_footer');
@@ -199,7 +199,7 @@ il.InteractiveVideoQuestionViewer = (function (scope) {
 		}
 		CKEDITOR.replace(comment_id);
 		feedback.prepend(language.add_comment);
-		scope.InteractiveVideoPlayerFunction.addAjaxFunctionForReflectionCommentPosting(pub.comment_id, pub.QuestionObject.reply_original_id, player_id, player);
+		scope.InteractiveVideoPlayerFunction.addAjaxFunctionForReflectionCommentPosting(pub.comment_id, pub.QuestionObject.reply_original_id, player_id);
 	};
 
 	pro.addToLocalIgnoreArrayIfNonRepeatable = function(player_id){
@@ -237,7 +237,7 @@ il.InteractiveVideoQuestionViewer = (function (scope) {
 		pro.showResponseFrequency(feedback.response_frequency);
 		modal.html(feedback.html);
 		if (parseInt(feedback.is_timed, 10) === 1) {
-			modal.append('<div class="learning_recommendation"><br/>' + language.learning_recommendation_text + ': ' + pro.createButtonButtons('jumpToTimeInVideo', language.feedback_button_text + ' ' + il.InteractiveVideoPlayerComments.protect.secondsToTimeCode(feedback.time)) + '</div>', '');
+			modal.append('<div class="learning_recommendation"><br/>' + language.learning_recommendation_text + ': ' + pro.createButtonButtons('jumpToTimeInVideo', language.feedback_button_text + ' ' + il.InteractiveVideoPlayerComments.secondsToTimeCode(feedback.time)) + '</div>', '');
 			let player_id = scope.InteractiveVideoPlayerFunction.getPlayerIdFromPlayerObject(player);
 			$(pri.ids.time_string).on('click', function () {
 				$(pri.ids.modal).modal('hide');
@@ -272,25 +272,28 @@ il.InteractiveVideoQuestionViewer = (function (scope) {
 
 	pro.showBestSolutionIsClicked = function(comment_id, player) {
 		$('#show_best_solution').prop("disabled", true)
-		$('.answer_label').addClass('answer_label_disable')
 		if(pub.QuestionObject.limit_attempts === "0"){
 			$('#question_buttons_bellow_form').append(pro.createButtonButtons('repeat_question', scope.InteractiveVideo.lang.repeat, 'question_repeat_btn', 'button'))
 			$('.question_repeat_btn').off('click');
 			$('.question_repeat_btn').on('click', function () {
 				let time = parseInt(pub.QuestionObject.time, 10);
+
+				//$(pri.ids.modal).modal('hide');
 				pro.removeQuestionLock();
 				pub.getQuestionPerAjax(comment_id, player, false);
+				//il.InteractiveVideoPlayerAbstract.jumpToTimeInVideo(time - 1, player_id);
 			});
 		}
 	}
 
-	pub.showBestSolutionForReflectionIsClicked = function(comment_id, player_id, player) {
+	pub.showBestSolutionForReflectionIsClicked = function(comment_id, player_id) {
 		$('#show_best_solution').prop("disabled", true)
 		if(pub.QuestionObject.limit_attempts === "0"){
-			$('#question_reflection_buttons_bellow_form').append(pro.createButtonButtons('repeat_question', scope.InteractiveVideo.lang.repeat, 'question_repeat_btn', 'button'))
+			//$('#question_reflection_buttons_bellow_form').append(pro.createButtonButtons('repeat_question', scope.InteractiveVideo.lang.repeat, 'question_repeat_btn', 'button'))
 			$('#repeat_question').off('click');
 			$('#repeat_question').on('click', function () {
 				let time = parseInt(pub.QuestionObject.time, 10);
+				let player = il.InteractiveVideoPlayerFunction.getPlayerDataObjectByPlayerId(player_id)
 				pro.removeQuestionLock();
 				pub.getQuestionPerAjax(comment_id, player, false);
 			});
