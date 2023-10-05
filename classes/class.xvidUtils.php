@@ -1,6 +1,4 @@
 <?php
-/* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/form/class.ilTextAreaInputCkeditorGUI.php';
 use enshrined\svgSanitize\Sanitizer;
 /**
  * Class xvidUtils
@@ -14,11 +12,11 @@ class xvidUtils
 
 	/**
 	 * @param $seconds
-	 * @return mixed
-	 */
+	 * @return array
+     */
 	public static function timespanArray( $seconds )
 	{
-		$time = array();
+		$time = [];
 		if(!is_array($seconds))
 		{
 			$td['s'] = $seconds % 60;
@@ -44,13 +42,13 @@ class xvidUtils
 		}
 	}
 
-	/**
-	 * @param      $seconds
-	 * @param bool $text_instead_of_null_string
-	 * @param bool $empty_string_instead_of_null
-	 * @return string
-	 */
-	public static function getTimeStringFromSeconds($seconds, $text_instead_of_null_string = false, $empty_string_instead_of_null = false)
+    /**
+     * @param      $seconds
+     * @param bool $text_instead_of_null_string
+     * @param bool $empty_string_instead_of_null
+     * @return string
+     */
+	public static function getTimeStringFromSeconds($seconds, bool $text_instead_of_null_string = false, bool $empty_string_instead_of_null = false)
 	{
 		$s = $seconds % 60;
 		$m = (($seconds - $s) / 60) % 60;
@@ -101,13 +99,13 @@ class xvidUtils
 			return $lng->txt('no');
 		}
 	}
-	
-	/**
-	 * @param $txt
-	 * @param $name
-	 * @return ilTextAreaInputGUI
-	 */
-	public static function constructTextAreaFormElement($txt, $name)
+
+    /**
+     * @param string $txt
+     * @param        $name
+     * @return ilTextAreaInputCkeditorGUI
+     */
+	public static function constructTextAreaFormElement(string $txt, $name): ilTextAreaInputCkeditorGUI
 	{
 		return new ilTextAreaInputCkeditorGUI(ilInteractiveVideoPlugin::getInstance()->txt($txt), $name);
 	}
@@ -116,30 +114,20 @@ class xvidUtils
      * @param $path
      * @return string
      */
-	public static function ensureFileSavePathExists($path)
+	public static function ensureFileSavePathExists($path): string
 	{
-		$path = ilUtil::getWebspaceDir() . self::INTERACTIVE_VIDEO . $path;
+		$path = ilFileUtils::getWebspaceDir() . self::INTERACTIVE_VIDEO . $path;
 		if( ! is_dir($path))
 		{
-			ilUtil::makeDirParents($path);
+            ilFileUtils::makeDirParents($path);
 		}
 		return $path .'/';
 	}
 
-	/**
-	 * @param string $svg
-	 * @return string
-	 */
-	public static function secureSvg($svg)
+	public static function secureSvg(string $svg): string
 	{
 		if(file_exists('./Services/MediaObjects/lib/svg-sanitizer-master/src/Sanitizer.php'))
 		{
-			require_once './Services/MediaObjects/lib/svg-sanitizer-master/src/data/AttributeInterface.php';
-			require_once './Services/MediaObjects/lib/svg-sanitizer-master/src/data/TagInterface.php';
-			require_once './Services/MediaObjects/lib/svg-sanitizer-master/src/data/AllowedTags.php';
-			require_once './Services/MediaObjects/lib/svg-sanitizer-master/src/data/AllowedAttributes.php';
-			require_once './Services/MediaObjects/lib/svg-sanitizer-master/src/Sanitizer.php';
-
 			$sanitizer = new Sanitizer();
 			$svg = $sanitizer->sanitize($svg);
 		}

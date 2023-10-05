@@ -1,17 +1,13 @@
 <?php
-/* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/Tracking/classes/repository_statistics/class.ilTrSummaryTableGUI.php';
-
 /**
  * Class ilInteractiveVideoLPSummaryTableGUI
  */
 class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 {
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	protected function parseTitle($a_obj_id, $action, $a_user_id = false)
+	protected function parseTitle($a_obj_id, $action, $a_user_id = false): void
 	{
 		/**
 		 * @var $lng ilLanguage
@@ -40,9 +36,9 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	protected function isPercentageAvailable($a_obj_id)
+    protected function isPercentageAvailable(int $a_obj_id): bool
 	{
 		if($this->isLearningProgressDeactivated())
 		{
@@ -55,7 +51,7 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 	/**
 	 * {@inheritdoc}
 	 */
-	public function searchFilterListener($a_ref_id, $a_data)
+    public function searchFilterListener(int $a_ref_id, array $a_data): bool
 	{
 		$status = parent::searchFilterListener($a_ref_id, $a_data);
 
@@ -70,10 +66,15 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 		return $status;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function getSelectableUserColumns($a_in_course = false, $a_in_group = false)
+    /**
+     * @param int $a_in_course
+     * @param int $a_in_group
+     * @return array
+     */
+    protected function getSelectableUserColumns(
+        int $a_in_course = 0,
+        int $a_in_group = 0
+    ): array
 	{
 		$columns = parent::getSelectableUserColumns($a_in_course, $a_in_group);
 
@@ -86,10 +87,10 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 		return $columns;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	function getSelectableColumns()
+    /**
+     * @return array
+     */
+	public function getSelectableColumns(): array
 	{
 		$columns = parent::getSelectableColumns();
 
@@ -102,25 +103,27 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 		return $columns;
 	}
 
-	/**
-	 * @return bool
-	 */
-	protected function isLearningProgressDeactivated()
+	protected function isLearningProgressDeactivated(): bool
 	{
-		return in_array($this->parent_obj->object->getLearningProgressMode(), array(ilObjInteractiveVideo::LP_MODE_DEACTIVATED));
+		return in_array($this->parent_obj->object->getLearningProgressMode(), [ilObjInteractiveVideo::LP_MODE_DEACTIVATED]);
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function fillRow($a_set)
+    /**
+     * {@inheritdoc}
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     */
+    protected function fillRow(array $a_set): void
 	{
 		/**
 		 * $lng ilLanguage
 		 */
 		global $lng;
 
-		$this->tpl->setVariable("ICON", ilObject::_getIcon("", "tiny", $a_set["type"]));
+		$this->tpl->setVariable("ICON", ilObject::_getIcon(0, "tiny", $a_set["type"]));
 		$this->tpl->setVariable("ICON_ALT", $lng->txt($a_set["type"]));
 		$this->tpl->setVariable("TITLE", $a_set["title"]);
 
@@ -149,7 +152,7 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 				case "percentage_avg":
 					if((int)$a_set[$c] === 0 || !$this->isPercentageAvailable($a_set["obj_id"]))
 					{
-						$this->tpl->setVariable(strtoupper($c), "");
+						$this->tpl->setVariable(strtoupper($c));
 					}
 					break;
 				default:
@@ -180,10 +183,10 @@ class ilInteractiveVideoLPSummaryTableGUI extends ilTrSummaryTableGUI
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	public function initFilter($a_split_learning_resources = false, $a_include_no_status_filter = true)
+    public function initFilter(): void
 	{
-		$this->filter = array();
+		$this->filter = [];
 	}
 } 

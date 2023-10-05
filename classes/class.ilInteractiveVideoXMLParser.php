@@ -1,8 +1,4 @@
 <?php
-require_once 'Services/Xml/classes/class.ilSaxParser.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilInteractiveVideoSimpleChoiceQuestionsXMLParser.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/VideoSources/class.ilInteractiveVideoSourceFactory.php';
-
 /**
  * Class ilInteractiveVideoXMLParser
  */
@@ -43,11 +39,11 @@ class ilInteractiveVideoXMLParser extends ilSaxParser
 	 */
 	protected $video_src_id;
 
-	/**
-	 * @param ilObjInteractiveVideo $xvid_obj
-	 * @param                      $xmlFile
-	 */
-	public function __construct($xvid_obj, $xmlFile)
+    /**
+     * @param ilObjInteractiveVideo $xvid_obj
+     * @param string|null           $xmlFile
+     */
+	public function __construct($xvid_obj, ?string $xmlFile)
 	{
 		$this->xvid_obj			= $xvid_obj;
 		$this->inSettingsTag	= false;
@@ -266,14 +262,14 @@ class ilInteractiveVideoXMLParser extends ilSaxParser
 		return null;
 	}
 
-	/**
-	 * @param $xmlParser
-	 */
-	public function setHandlers($xmlParser)
+    /**
+     * @param $a_xml_parser
+     */
+    public function setHandlers($a_xml_parser) : void
 	{
-		xml_set_object($xmlParser, $this);
-		xml_set_element_handler($xmlParser, 'handlerBeginTag', 'handlerEndTag');
-		xml_set_character_data_handler($xmlParser, 'handlerCharacterData');
+		xml_set_object($a_xml_parser, $this);
+		xml_set_element_handler($a_xml_parser, 'handlerBeginTag', 'handlerEndTag');
+		xml_set_character_data_handler($a_xml_parser, 'handlerCharacterData');
 	}
 
 	/**
@@ -287,7 +283,7 @@ class ilInteractiveVideoXMLParser extends ilSaxParser
 	/**
 	 * Set import directory
 	 *
-	 * @param	string	import directory
+	 * @param	string $a_val import directory
 	 */
 	public function setImportDirectory($a_val)
 	{

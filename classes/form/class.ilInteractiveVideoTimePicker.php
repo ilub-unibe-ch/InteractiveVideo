@@ -1,5 +1,4 @@
 <?php
-require_once './Services/Form/classes/class.ilSubEnabledFormPropertyGUI.php';
 /**
  * Class ilInteractiveVideoTimePicker
  */
@@ -13,25 +12,29 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	/**
 	 * @var string
 	 */
-	protected $title;
+    protected string $title = "";
 
 	/**
 	 * @var string
 	 */
-	protected $info;
+    protected string $info = "";
 
 	/**
 	 * @var string
 	 */
 	protected $id;
 
+    protected $dic;
+
 	/**
 	 * ilInteractiveVideoTimePicker constructor.
 	 * @param string $a_title
 	 * @param string $a_id
 	 */
-	public function __construct($a_title = "", $a_id = "")
+	public function __construct(string $a_title = "", string $a_id = "")
 	{
+        global $DIC;
+        $this->dic = $DIC;
 		parent::__construct($a_title, $a_id);
 		$this->setTitle($a_title);
 		$this->setId($a_id);
@@ -41,51 +44,46 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	/**
 	 * @return bool
 	 */
-	public function checkInput()
+    public function checkInput(): bool
 	{
-		if(!is_array($_POST[$this->getPostVar()]))
-		{
-			$_POST[$this->getPostVar()] = $this->getSecondsFromString(ilUtil::stripSlashes($_POST[$this->getPostVar()]));
-		}
+        if($this->dic->http()->wrapper()->post()->has($this->getPostVar()))
+        {
+            $post = $this->dic->http()->wrapper()->post()->retrieve($this->getPostVar(), $this->dic->refinery()->kindlyTo()->string());
+            if($this->dic->http()->wrapper()->post()->has($this->getPostVar())){
+                $post = $this->dic->http()->wrapper()->post()->retrieve($this->getPostVar(), $this->dic->refinery()->kindlyTo()->string());
+            }
+        }
+
 		return $this->checkSubItemsInput();
 	}
 
-	/**
-	 * @param $a_value
-	 */
-	public function setValue($a_value)
+    /**
+     * @param string $a_value
+     */
+	public function setValue(string $a_value): void
 	{
 		$this->value = $a_value;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getValue()
+	public function getValue(): ?string
 	{
 		return $this->value;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getId()
+	public function getId(): string
 	{
 		return $this->id;
 	}
 
-	/**
-	 * @param string $id
-	 */
-	public function setId($id)
+	public function setId(string $id): void
 	{
 		$this->id = $id;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function render()
+    /**
+     * @throws ilTemplateException
+     */
+    public function render(): string
 	{
 		$my_tpl = new ilTemplate('tpl.time_picker.html', true, true, 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/');
 		$value = $this->getValue();
@@ -95,10 +93,10 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 		return $my_tpl->get();
 	}
 
-	/**
-	 * @param ilTemplate $a_tpl
-	 */
-	public function insert($a_tpl)
+    /**
+     * @throws ilTemplateException
+     */
+    public function insert(ilTemplate $a_tpl): void
 	{
 		$a_tpl->setCurrentBlock("prop_generic");
 		$a_tpl->setVariable("PROP_GENERIC", $this->render());
@@ -108,7 +106,7 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	/**
 	 * @param $a_values
 	 */
-	public function setValueByArray($a_values)
+	public function setValueByArray($a_values): void
 	{
 		if ($this->getPostVar() && isset($a_values[$this->getPostVar()]))
 		{
@@ -120,14 +118,10 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 		}
 	}
 
-	/**
-	 * @param string $comment_time
-	 * @return int
-	 */
-	public static function getSecondsFromString($comment_time)
+	public static function getSecondsFromString(string $comment_time): int
 	{
 		$seconds = 0;
-		$comment_time = preg_split('/:/', $comment_time);
+		$comment_time = explode(':', $comment_time);
 		if(is_array($comment_time) && sizeof($comment_time) == 3)
 		{
 			$seconds = ((int)$comment_time[0] * 3600) + ((int)$comment_time[1] * 60) + (int)$comment_time[2];
@@ -139,7 +133,7 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	 * @param $seconds
 	 * @return false|string
 	 */
-	public static function getTimeStringFromSeconds($seconds)
+	public static function getTimeStringFromSeconds($seconds): string
 	{
 		return gmdate('H:i:s', $seconds);
 	}

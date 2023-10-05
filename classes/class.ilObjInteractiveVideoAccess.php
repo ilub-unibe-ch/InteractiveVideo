@@ -1,7 +1,7 @@
 <?php
 /* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/Repository/classes/class.ilObjectPluginAccess.php';
+
 if(version_compare(ILIAS_VERSION_NUMERIC, '5.4.0', '>=')) {
 	require_once 'Services/Conditions/interfaces/interface.ilConditionHandling.php';
 	require_once('./Services/Conditions/classes/class.ilConditionHandler.php');
@@ -9,7 +9,7 @@ if(version_compare(ILIAS_VERSION_NUMERIC, '5.4.0', '>=')) {
 	require_once 'Services/AccessControl/interfaces/interface.ilConditionHandling.php';
 	require_once 'Services/AccessControl/classes/class.ilConditionHandler.php';
 }
-require_once 'Services/WebAccessChecker/interfaces/interface.ilWACCheckingClass.php';
+
 
 /**
  * Class ilObjInteractiveVideoAccess
@@ -17,15 +17,15 @@ require_once 'Services/WebAccessChecker/interfaces/interface.ilWACCheckingClass.
  */
 class ilObjInteractiveVideoAccess extends ilObjectPluginAccess implements ilConditionHandling, ilWACCheckingClass
 {
-	/**
-	 * @param string $a_cmd
-	 * @param string $a_permission
-	 * @param int    $a_ref_id
-	 * @param int    $a_obj_id
-	 * @param string $a_user_id
-	 * @return bool
-	 */
-	public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = '')
+    /**
+     * @param string   $cmd
+     * @param string   $permission
+     * @param int      $ref_id
+     * @param int      $obj_id
+     * @param int|null $user_id
+     * @return bool
+     */
+    public function _checkAccess(string $cmd, string $permission, int $ref_id, int $obj_id, ?int $user_id = null): bool
 	{
 		/**
 		 * @var $ilUser   ilObjUser
@@ -33,18 +33,18 @@ class ilObjInteractiveVideoAccess extends ilObjectPluginAccess implements ilCond
 		 */
 		global $ilUser, $ilAccess;
 
-		if(!$a_user_id)
+		if(!$user_id)
 		{
-			$a_user_id = $ilUser->getId();
+            $user_id = $ilUser->getId();
 		}
 		
-		switch($a_permission)
+		switch($permission)
 		{
 			case 'read':
 			case 'visible':
 				if(
-					!ilObjInteractiveVideoAccess::checkOnline($a_obj_id) &&
-					!$ilAccess->checkAccessOfUser($a_user_id, 'write', '', $a_ref_id)
+					!ilObjInteractiveVideoAccess::checkOnline($obj_id) &&
+					!$ilAccess->checkAccessOfUser($user_id, 'write', '', $ref_id)
 				)
 				{
 					return false;
@@ -61,10 +61,7 @@ class ilObjInteractiveVideoAccess extends ilObjectPluginAccess implements ilCond
 	 */
 	public static function checkOnline($a_id)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$set = $ilDB->query('
 			SELECT is_online FROM rep_robj_xvid_objects WHERE obj_id = ' . $ilDB->quote($a_id, 'integer')
@@ -76,30 +73,32 @@ class ilObjInteractiveVideoAccess extends ilObjectPluginAccess implements ilCond
 	/**
 	 * @inheritdoc
 	 */
-	public static function getConditionOperators()
+    public static function getConditionOperators(): array
 	{
-		return array(
+		return [
 			ilConditionHandler::OPERATOR_LP
-		);
+        ];
 	}
 
-	/**
-	 * @param int $a_trigger_obj_id
-	 * @param type $a_operator
-	 * @param type $a_value
-	 * @param int $a_usr_id
-	 * @return bool
-	 */
-	public static function checkCondition($a_trigger_obj_id, $a_operator, $a_value, $a_usr_id)
+    /**
+     * @param int    $a_trigger_obj_id
+     * @param string $a_operator
+     * @param string $a_value
+     * @param int    $a_usr_id
+     * @return bool
+     */
+    public static function checkCondition(
+        int $a_trigger_obj_id,
+        string $a_operator,
+        string $a_value,
+        int $a_usr_id
+    ): bool
 	{
-		switch($a_operator)
-		{
-			case ilConditionHandler::OPERATOR_LP:
-				// Not necessary, handled in \ilConditionHandler::_checkCondition
-				require_once './Services/Tracking/classes/class.ilLPStatus.php';
-				return ilLPStatus::_hasUserCompleted($a_trigger_obj_id, $a_usr_id);
-				break;
-		}
+        // Not necessary, handled in \ilConditionHandler::_checkCondition
+        if ($a_operator == ilConditionHandler::OPERATOR_LP) {
+            require_once './Services/Tracking/classes/class.ilLPStatus.php';
+            return ilLPStatus::_hasUserCompleted($a_trigger_obj_id, $a_usr_id);
+        }
 
 		return false;
 	}
@@ -109,7 +108,8 @@ class ilObjInteractiveVideoAccess extends ilObjectPluginAccess implements ilCond
 	 *
 	 * @return bool
 	 */
-	public function canBeDelivered(ilWACPath $ilWACPath) {
+    public function canBeDelivered(ilWACPath $ilWACPath): bool
+    {
 		/**
 		 * @var $ilAccess ilAccess
 		 */

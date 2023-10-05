@@ -1,14 +1,14 @@
 <?php
-require_once 'Services/Export/classes/class.ilExportGUI.php';
 /**
  * Class ilInteractiveVideoExportGUI
  */
 class ilInteractiveVideoExportGUI extends ilExportGUI
 {
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function buildExportTableGUI()
+    /**
+     * {}
+     * @throws ilCtrlException
+     */
+    protected function buildExportTableGUI(): ilExportTableGUI
 	{
 		/**
 		 * @var $ilCtrl ilCtrl
@@ -19,7 +19,6 @@ class ilInteractiveVideoExportGUI extends ilExportGUI
 			ilInteractiveVideoPlugin::getInstance()->txt('export_all_comments'),
 			$ilCtrl->getLinkTarget(new ilObjInteractiveVideoGUI(), 'exportAllComments')
 		);
-		require_once 'tables/class.ilInteractiveVideoExportTableGUI.php';
 		$table = new ilInteractiveVideoExportTableGUI($this, 'listExportFiles', $this->obj);
 		return $table;
 	}
@@ -27,12 +26,9 @@ class ilInteractiveVideoExportGUI extends ilExportGUI
 	/**
 	 * Download file
 	 */
-	public function download()
+    public function download(): void
 	{
-		if(isset($_GET['file']) && $_GET['file'])
-		{
-			$_POST['file'] = array($_GET['file']);
-		}
+
 		parent::download();
 	}
 }

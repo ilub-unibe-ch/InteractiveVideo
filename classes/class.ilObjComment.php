@@ -1,128 +1,31 @@
 <?php
-/* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
-require_once 'Services/User/classes/class.ilUserUtil.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilHtmlInteractiveVideoPostPurifier.php';
-
-/**
- * Class ilObjComment
- * @author Nadia Ahmad <nahmad@databay.de>
- */
 class ilObjComment
 {
-	/**
-	 * @var integer
-	 */
-	protected $obj_id;
+	protected int $obj_id;
+	protected int $comment_id;
+	protected int $user_id;
+    protected bool $is_tutor = false;
+    protected int $comment_time = 0;
+	protected int $comment_time_end = 0;
+	protected string $comment_text = '';
+	protected bool $is_interactive = false;
+	protected string $comment_title = '';
+	protected string $comment_tags = '';
+	protected array $comments = [];
+	protected int $is_private = 0;
+    protected int $is_table_of_content = 0;
+    protected int $is_public = 0;
+	protected int $is_anonymized = 0;
+    protected int $is_repeat = 0;
+	protected int $is_reply_to = 0;
+	protected string $marker;
+	protected static array $user_name_cache = [];
+	protected static array $user_image_cache = [];
+	protected ilDBInterface $db;
 
-	/**
-	 * @var integer
-	 */
-	protected $comment_id;
-
-	/**
-	 * @var integer
-	 */
-	protected $user_id;
-
-	/**
-	 * @var bool
-	 */
-	protected $is_tutor = false;
-
-	/**
-	 * @var float $comment_time in seconds
-	 */
-	protected $comment_time = 0;
-
-	/**
-	 * @var float $comment_time in seconds
-	 */
-	protected $comment_time_end = 0;
-
-	/**
-	 * @var string
-	 */
-	protected $comment_text = '';
-
-	/**
-	 * @var bool
-	 */
-	protected $is_interactive = false;
-
-	/**
-	 * @var string
-	 */
-	protected $comment_title = '';
-
-	/**
-	 * @var string
-	 */
-	protected $comment_tags = '';
-
-	/**
-	 * @var array
-	 */
-	protected $comments = array();
-
-	/**
-	 * @var int
-	 */
-	protected $is_private = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $is_table_of_content = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $is_public = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $is_anonymized = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $is_repeat = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $is_reply_to = 0;
-
-	/**
-	 * @var string
-	 */
-	protected $marker;
-
-	/**
-	 * @var array
-	 */
-	protected static $user_name_cache = array();
-
-	/**
-	 * @var array
-	 */
-	protected static $user_image_cache = array();
-
-    /**
-     * @var ilDBInterface
-     */
-	protected $db;
-
-	/**
-	 * @param int $comment_id
-	 */
-	public function __construct($comment_id = 0)
+	public function __construct(int $comment_id = 0)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-	    global $ilDB;
+        global $ilDB;
 	    $this->db = $ilDB;
 
 		if($comment_id > 0)
@@ -137,31 +40,27 @@ class ilObjComment
 
 		$res = $this->db->queryF(
 			'SELECT * FROM rep_robj_xvid_comments WHERE comment_id = %s',
-			array('integer'),
-			array($this->getCommentId())
+			['integer'],
+			[$this->getCommentId()]
 		);
 		$row = $this->db->fetchAssoc($res);
 
-		$this->setCommentText($row['comment_text']);
-		$this->setCommentTime($row['comment_time']);
-		$this->setCommentTimeEnd($row['comment_time_end']);
+		$this->setCommentText((string) $row['comment_text']);
+		$this->setCommentTime((int) $row['comment_time']);
+		$this->setCommentTimeEnd((int) $row['comment_time_end']);
 		$this->setInteractive((bool)$row['is_interactive']);
 		$this->setIsTutor((bool)$row['is_tutor']);
-		$this->setUserId($row['user_id']);
-		$this->setCommentTitle($row['comment_title']);
-		$this->setCommentTags($row['comment_tags']);
-		$this->setIsPrivate($row['is_private']);
-		$this->setIsTableOfContent($row['is_table_of_content']);
-		$this->setIsReplyTo($row['is_reply_to']);
-		$this->setMarker($row['marker']);
+		$this->setUserId((int) $row['user_id']);
+		$this->setCommentTitle((string) $row['comment_title']);
+		$this->setCommentTags((string) $row['comment_tags']);
+		$this->setIsPrivate((int) $row['is_private']);
+		$this->setIsTableOfContent((int) $row['is_table_of_content']);
+		$this->setIsReplyTo((int) $row['is_reply_to']);
+		$this->setMarker((string) $row['marker']);
 	}
 
-	/**
-	 * @param bool $return_next_id
-	 * @return null | int
-	 */
-	public function create($return_next_id = false, $reply_to_posting = false)
-	{
+	public function create(bool $return_next_id = false, bool $reply_to_posting = false) : ?int
+    {
         /**
          * @var $ilUser ilObjUser
          */
@@ -175,44 +74,42 @@ class ilObjComment
 		}
 		$next_id = $this->db->nextId('rep_robj_xvid_comments');
 		$this->setCommentId($next_id);
+        $this->setMarker('');
         $this->db->insert('rep_robj_xvid_comments',
-			array(
-				'comment_id'     	=> array('integer', $next_id),
-				'obj_id'         	=> array('integer', $this->getObjId()),
-				'user_id'        	=> array('integer', $ilUser->getId()),
-				'is_tutor'       	=> array('integer', (int)$this->isTutor()),
-				'is_interactive' 	=> array('integer', (int)$this->isInteractive()),
-				'comment_time'   	=> array('integer', round($this->getCommentTime(), 0)),
-				'comment_time_end'  => array('integer', round($this->getCommentTimeEnd(), 0)),
-				'comment_text'   	=> array('text',  $text),
-				'comment_title'		=> array('text', $this->getCommentTitle()),
-				'comment_tags'		=> array('text', $this->getCommentTags()),
-				'is_private'		=> array('integer', $this->getIsPrivate()),
-				'is_table_of_content'=> array('integer', $this->getIsTableOfContent()),
-				'is_reply_to'		=> array('integer', $this->getIsReplyTo()),
-				'marker'			=> array('text', $this->getMarker())
-			));
+			[
+                'comment_id'     	=> ['integer', $next_id],
+                'obj_id'         	=> ['integer', $this->getObjId()],
+                'user_id'        	=> ['integer', $ilUser->getId()],
+                'is_tutor'       	=> ['integer', (int)$this->isTutor()],
+                'is_interactive' 	=> ['integer', (int)$this->isInteractive()],
+                'comment_time'   	=> ['integer', round($this->getCommentTime())],
+                'comment_time_end'  => ['integer', round($this->getCommentTimeEnd())],
+                'comment_text'   	=> ['text', $text],
+                'comment_title'		=> ['text', $this->getCommentTitle()],
+                'comment_tags'		=> ['text', $this->getCommentTags()],
+                'is_private'		=> ['integer', $this->getIsPrivate()],
+                'is_table_of_content'=> ['integer', $this->getIsTableOfContent()],
+                'is_reply_to'		=> ['integer', $this->getIsReplyTo()],
+                'marker'			=> ['text', $this->getMarker()]
+            ]);
 		if($return_next_id)
 		{
 			return $next_id;
 		}
+        return null;
 	}
 
-	/**
-	 * delete
-	 * @param int $reply_to
-	 */
-	public function removeOldReplyTo($reply_to)
+	public function removeOldReplyTo(int $reply_to): void
 	{
         /**
          * @var $ilUser ilObjUser
          */
 		global $ilUser;
         $this->db->manipulateF('DELETE FROM rep_robj_xvid_comments WHERE is_reply_to = %s AND user_id = %s',
-			array('integer', 'integer'), array($reply_to, $ilUser->getId()));
+			['integer', 'integer'], [$reply_to, $ilUser->getId()]);
 	}
 
-	public function update()
+	public function update(): void
 	{
         /**
          * @var $ilUser ilObjUser
@@ -222,54 +119,46 @@ class ilObjComment
 		$text = $purify->purify($this->getCommentText());
 
         $this->db->update('rep_robj_xvid_comments',
-			array(
-				'is_interactive' 	=> array('integer', (int)$this->isInteractive()),
-				'user_id'        	=> array('integer', $ilUser->getId()),
-				'comment_time'   	=> array('integer', round($this->getCommentTime(), 0)),
-				'comment_time_end'  => array('integer', round($this->getCommentTimeEnd(), 2)),
-				'comment_text'   	=> array('text', $text),
-				'comment_title'		=> array('text', $this->getCommentTitle()),
-				'comment_tags'		=> array('text', $this->getCommentTags()),
-				'is_private'		=> array('integer', $this->getIsPrivate()),
-				'is_table_of_content'=> array('integer', $this->getIsTableOfContent()),
-				'is_reply_to'		=> array('integer', $this->getIsReplyTo()),
-				'marker'			=> array('text', $this->getMarker())
-			),
-			array(
-				'comment_id' => array('integer', $this->getCommentId())
-			)
+			[
+                'is_interactive' 	=> ['integer', (int)$this->isInteractive()],
+                'user_id'        	=> ['integer', $ilUser->getId()],
+                'comment_time'   	=> ['integer', round($this->getCommentTime())],
+                'comment_time_end'  => ['integer', round($this->getCommentTimeEnd(), 2)],
+                'comment_text'   	=> ['text', $text],
+                'comment_title'		=> ['text', $this->getCommentTitle()],
+                'comment_tags'		=> ['text', $this->getCommentTags()],
+                'is_private'		=> ['integer', $this->getIsPrivate()],
+                'is_table_of_content'=> ['integer', $this->getIsTableOfContent()],
+                'is_reply_to'		=> ['integer', $this->getIsReplyTo()],
+                'marker'			=> ['text', $this->getMarker()]
+            ],
+			[
+				'comment_id' => ['integer', $this->getCommentId()]
+            ]
 		);
 	}
 
-	/**
-	 * @param $comment_ids
-	 * @return bool
-	 */
-	public function deleteComments($comment_ids)
-	{
-
-		if(!is_array($comment_ids))
-			return false;
-
+	public function deleteComments(array $comment_ids) : bool
+    {
         $this->db->manipulate('DELETE FROM rep_robj_xvid_comments WHERE ' . $this->db->in('comment_id', $comment_ids, false, 'integer'));
-	}
+	    return true;
+    }
 
-
-	/**
-	 * @return array
-	 */
-	public function getStopPoints()
-	{
+    /**
+     * @return array
+     */
+	public function getStopPoints() : array
+    {
 		$res = $this->db->queryF(
 			'SELECT comment_time
 			FROM rep_robj_xvid_comments
 			WHERE obj_id = %s
 			ORDER BY comment_time ASC',
-			array('integer'),
-			array($this->getObjId())
+			['integer'],
+			[$this->getObjId()]
 		);
 
-		$stop_points = array();
+		$stop_points = [];
 		while($row = $this->db->fetchAssoc($res))
 		{
 			$stop_points[] = $row['comment_time'];
@@ -279,26 +168,24 @@ class ilObjComment
 	}
 
     /**
-     * @param false $toc
+     * @param bool $toc
      * @return array
+     * @throws ilWACException
      */
-	public function getContentComments($toc = false)
-	{
-		/**
-		 * @var $ilDB
-		 */
-		global $ilDB, $ilUser;
+	public function getContentComments(bool $toc = false) : array
+    {
+		global $ilUser;
 
-		$query_types = array('integer','integer','integer','integer');
-		$query_data = array($this->getObjId(), 0, 1, $ilUser->getId());
+		$query_types = ['integer', 'integer', 'integer', 'integer'];
+		$query_data = [$this->getObjId(), 0, 1, $ilUser->getId()];
 
 		$where_condition = '';
 
 		if(!$this->isPublic())
 		{
 			$where_condition = ' AND (user_id = %s OR is_tutor = %s OR is_interactive = %s )';
-			$query_types = array_merge($query_types, array('integer', 'integer', 'integer'));
-			$query_data = array_merge($query_data, array($ilUser->getId(), 1, 1));
+			$query_types = array_merge($query_types, ['integer', 'integer', 'integer']);
+			$query_data = array_merge($query_data, [$ilUser->getId(), 1, 1]);
 		}
 		
 		$res = $this->db->queryF(
@@ -312,12 +199,12 @@ class ilObjComment
 			$query_data
 		);
 
-		$comments = array();
-		$is_reply_to = array();
+		$comments = [];
+		$is_reply_to = [];
 		$i = 0;
 		while($row = $this->db->fetchAssoc($res))
 		{
-			$temp = array();
+			$temp = [];
 			$temp['comment_id'] = $row['comment_id'];
 			$temp['user_name'] = '';
 			if(!$this->isAnonymized())
@@ -344,7 +231,7 @@ class ilObjComment
 			$temp['is_table_of_content'] = $row['is_table_of_content'];
 			$temp['is_reply_to'] 		= $row['is_reply_to'];
 			$temp['marker'] 			= $row['marker'];
-			$temp['replies']			= array();
+			$temp['replies']			= [];
 
 			$temp['is_overlay'] = "1";
 
@@ -372,13 +259,8 @@ class ilObjComment
 		return $comments;
 	}
 
-	/**
-	 * @param $is_reply_to
-	 * @param $comments
-	 * @return array
-	 */
-	protected function sortInReplies($is_reply_to, $comments)
-	{
+	protected function sortInReplies($is_reply_to, $comments) : array
+    {
 		foreach($is_reply_to as $value)
 		{
 			foreach($comments as $key => $comment)
@@ -391,21 +273,18 @@ class ilObjComment
 		}
 		return $comments;
 	}
-	/**
-	 * @param int $old_id
-	 * @param int $new_id
-	 */
-	public function cloneTutorComments($old_id, $new_id)
+
+	public function cloneTutorComments(int $old_id, int $new_id): void
 	{
-		$questions_array = array();
+		$questions_array = [];
 		$res = $this->db->queryF(
 			'SELECT *
 			FROM rep_robj_xvid_comments
 			WHERE obj_id = %s
 			AND is_tutor = 1
 			ORDER BY comment_time, comment_id ASC',
-			array('integer'),
-			array($old_id)
+			['integer'],
+			[$old_id]
 		);
 		while($row = $this->db->fetchAssoc($res))
 		{
@@ -423,7 +302,7 @@ class ilObjComment
 			$this->setIsReplyTo($row['is_reply_to']);
 			$this->setMarker($row['marker']);
 			$new_comment_id = $this->create(true);
-			if((bool)$row['is_interactive'])
+			if($row['is_interactive'])
 			{
 				$questions_array[$row['comment_id']] = $new_comment_id;
 			}
@@ -435,14 +314,11 @@ class ilObjComment
 		}
 	}
 
-	/**
-	 * @param int $user_id
-	 * @return string
-	 */
-	public static function getUserImageInBase64($user_id)
-	{
-		$user_id = (int) $user_id;
-
+    /**
+     * @throws ilWACException
+     */
+    public static function getUserImageInBase64(int $user_id) : string
+    {
 		if(!array_key_exists($user_id, self::$user_image_cache))
 		{
             if (strlen(ilObjUser::_lookupLogin($user_id)) > 0) {
@@ -467,14 +343,8 @@ class ilObjComment
 		return self::$user_image_cache[$user_id];
 	}
 
-	/**
-	 * @param int $user_id
-	 * @return string
-	 */
-	public static function lookupUsername($user_id)
-	{
-		$user_id = (int) $user_id;
-
+	public static function lookupUsername(int $user_id) : string
+    {
 		if(!array_key_exists($user_id, self::$user_name_cache))
 		{
             if (strlen(ilObjUser::_lookupLogin($user_id)) > 0) {
@@ -497,11 +367,7 @@ class ilObjComment
 		return self::$user_name_cache[$user_id];
 	}
 
-    /**
-     * @param int $question_id
-     * @return string
-     */
-	public static function getCommentTitleByQuestionId($question_id)
+	public static function getCommentTitleByQuestionId(int $question_id) : string
     {
         /**
          * @vas $ilDB ilDB
@@ -515,8 +381,8 @@ class ilObjComment
                     INNER JOIN rep_robj_xvid_question 
                         ON rep_robj_xvid_comments.comment_id = rep_robj_xvid_question.comment_id
                         WHERE rep_robj_xvid_question.question_id=%s;',
-            array('integer'),
-            array($question_id)
+            ['integer'],
+            [$question_id]
         );
 
         while($row = $ilDB->fetchAssoc($res))
@@ -528,282 +394,180 @@ class ilObjComment
     }
 
 	################## SETTER & GETTER ##################
-	/**
-	 * @return int
-	 */
-	public function getObjId()
-	{
+	public function getObjId() : int
+    {
 		return $this->obj_id;
 	}
 
-	/**
-	 * @param int $obj_id
-	 */
-	public function setObjId($obj_id)
+	public function setObjId(int $obj_id): void
 	{
-		$this->obj_id = (int) $obj_id;
+		$this->obj_id = $obj_id;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getCommentId()
-	{
+	public function getCommentId() : int
+    {
 		return $this->comment_id;
 	}
 
-	/**
-	 * @param int $comment_id
-	 */
-	public function setCommentId($comment_id)
+	public function setCommentId(int $comment_id): void
 	{
-		$this->comment_id = (int) $comment_id;
+		$this->comment_id = $comment_id;
 	}
 
-	/**
-	 * @return boolean
-	 */
-	public function isInteractive()
-	{
+	public function isInteractive() : bool
+    {
 		return $this->is_interactive;
 	}
 
-	/**
-	 * @param boolean $is_interactive
-	 */
-	public function setInteractive($is_interactive)
+	public function setInteractive(bool $is_interactive): void
 	{
 		$this->is_interactive = $is_interactive;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getCommentText()
-	{
+	public function getCommentText() : string
+    {
 		return $this->comment_text;
 	}
 
-	/**
-	 * @param string $comment_text
-	 */
-	public function setCommentText($comment_text)
+	public function setCommentText(string $comment_text): void
 	{
 		$this->comment_text = $comment_text;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getCommentTime()
+	public function getCommentTime() : int
 	{
 		return $this->comment_time;
 	}
 
-	/**
-	 * @param float $comment_time
-	 */
-	public function setCommentTime($comment_time)
+	public function setCommentTime(int $comment_time): void
 	{
 		$this->comment_time = $comment_time;
 	}
 
-	/**
-	 * @return boolean
-	 */
-	public function isTutor()
-	{
+	public function isTutor() : bool
+    {
 		return $this->is_tutor;
 	}
 
-	/**
-	 * @param boolean $is_tutor
-	 */
-	public function setIsTutor($is_tutor)
+	public function setIsTutor(bool $is_tutor): void
 	{
 		$this->is_tutor = $is_tutor;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getUserId()
-	{
+	public function getUserId() : int
+    {
 		return $this->user_id;
 	}
 
-	/**
-	 * @param int $user_id
-	 */
-	public function setUserId($user_id)
+	public function setUserId(int $user_id): void
 	{
 		$this->user_id = $user_id;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getCommentTags()
-	{
+	public function getCommentTags() : string
+    {
 		return $this->comment_tags;
 	}
 
-	/**
-	 * @param string $comment_tags
-	 */
-	public function setCommentTags($comment_tags)
+	public function setCommentTags(string $comment_tags): void
 	{
 		$this->comment_tags = $comment_tags;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getCommentTitle()
-	{
+    public function getCommentTitle() : string
+    {
 		return $this->comment_title;
 	}
 
-	/**
-	 * @param string $comment_title
-	 */
-	public function setCommentTitle($comment_title)
+	public function setCommentTitle(string $comment_title): void
 	{
 		$this->comment_title = $comment_title;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getIsPrivate()
-	{
+	public function getIsPrivate() : int
+    {
 		return $this->is_private;
 	}
 
-	/**
-	 * @param int $is_private
-	 */
-	public function setIsPrivate($is_private)
+	public function setIsPrivate(int $is_private): void
 	{
 		$this->is_private = $is_private;
 	}
 
-    /**
-     * @return int
-     */
-    public function getIsTableOfContent()
+    public function getIsTableOfContent() : int
     {
         return $this->is_table_of_content;
     }
 
-    /**
-     * @param int $is_table_of_content
-     */
-    public function setIsTableOfContent($is_table_of_content)
+    public function setIsTableOfContent(int $is_table_of_content): void
     {
         $this->is_table_of_content = $is_table_of_content;
     }
 	
-	/**
-	 * @return int
-	 */
-	public function isPublic()
-	{
+	public function isPublic() : int
+    {
 		return $this->is_public;
 	}
 
-	/**
-	 * @param int $is_public
-	 */
-	public function setIsPublic($is_public)
+	public function setIsPublic(int $is_public): void
 	{
 		$this->is_public = $is_public;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function isAnonymized()
-	{
+	public function isAnonymized() : int
+    {
 		return $this->is_anonymized;
 	}
 
-	/**
-	 * @param int $is_anonymized
-	 */
-	public function setIsAnonymized($is_anonymized)
+	public function setIsAnonymized(int $is_anonymized): void
 	{
 		$this->is_anonymized = $is_anonymized;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function isRepeat()
-	{
+	public function isRepeat() : int
+    {
 		return $this->is_repeat;
 	}
 
-	/**
-	 * @param int $is_repeat
-	 */
-	public function setIsRepeat($is_repeat)
+	public function setIsRepeat(int $is_repeat): void
 	{
 		$this->is_repeat = $is_repeat;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getCommentTimeEnd()
+	public function getCommentTimeEnd() : int
 	{
 		return $this->comment_time_end;
 	}
 
-	/**
-	 * @param float $comment_time_end
-	 */
-	public function setCommentTimeEnd($comment_time_end)
+	public function setCommentTimeEnd(int $comment_time_end): void
 	{
 		$this->comment_time_end = $comment_time_end;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getIsReplyTo()
-	{
+	public function getIsReplyTo() : int
+    {
 		return $this->is_reply_to;
 	}
 
-	/**
-	 * @param int $is_reply_to
-	 */
-	public function setIsReplyTo($is_reply_to)
+	public function setIsReplyTo(int $is_reply_to): void
 	{
 		$this->is_reply_to = $is_reply_to;
 	}
 
-	/**
-	 * @return array
-	 */
-	public static function getUserImageCache()
-	{
+    /**
+     * @return array
+     */
+	public static function getUserImageCache() : array
+    {
 		return self::$user_image_cache;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getMarker()
-	{
+	public function getMarker() : string
+    {
 		return $this->marker;
 	}
 
-	/**
-	 * @param string $marker
-	 */
-	public function setMarker($marker)
+	public function setMarker(string $marker): void
 	{
 		$this->marker = $marker;
 	}

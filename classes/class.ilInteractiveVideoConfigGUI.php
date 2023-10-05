@@ -1,12 +1,9 @@
 <?php
 
-require_once './Services/Component/classes/class.ilPluginConfigGUI.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/VideoSources/class.ilInteractiveVideoSourceFactory.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilInteractiveVideoDbUpdater.php';
-
 /**
- * Class ilInteractiveVideoConfigGUI
+ * @ilCtrl_IsCalledBy ilInteractiveVideoConfigGUI: ilObjComponentSettingsGUI
  */
+
 class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 {
 	/**
@@ -70,10 +67,11 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		$this->active_tab			= 'settings';
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function performCommand($cmd)
+    /**
+     * {}
+     * @throws ilCtrlException
+     */
+    public function performCommand(string $cmd): void
 	{
 		switch($cmd)
 		{
@@ -83,6 +81,9 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 			case 'loadDbUpdates':
 				$this->loadDbUpdates();
 				break;
+           case 'loadLanguages':
+				$this->loadLanguages();
+				break;
 			case 'showConfigurationForm':
 			default:
 				$this->showConfigurationForm();
@@ -90,9 +91,10 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		}
 	}
 
-	/**
-	 * @param ilPropertyFormGUI $form
-	 */
+    /**
+     * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
+     */
 	protected function showConfigurationForm(ilPropertyFormGUI $form = null)
 	{
 
@@ -105,19 +107,21 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		$this->tpl->setContent($form->getHTML());
 	}
 
-	/**
-	 * @return ilPropertyFormGUI
-	 */
+    /**
+     * @return ilPropertyFormGUI
+     * @throws ilCtrlException
+     */
 	protected function getConfigurationForm()
 	{
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
-
 		$form = new ilPropertyFormGUI();
 		$db_updater = new ilInteractiveVideoDbUpdater();
 
-		$source = ilUtil::stripSlashes($_GET['video_source']);
+        $source = '';
+        if($_GET['video_source']){
+            $source = ilInteractiveVideoPlugin::stripSlashesWrapping($_GET['video_source']);
+        }
 		$form->setFormAction($this->ctrl->getFormAction($this, 'showConfigurationForm'));
-		$mapping = array();
+		$mapping = [];
 
 		$update_map = $db_updater->getMap();
 		if($source == '')
@@ -141,7 +145,7 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 				}
 				$activation->setInfo($info);
 				$form->addItem($activation);
-				$mapping[$class] = array('path' => $engine->getClassPath(), 'id' => $engine->getId());
+				$mapping[$class] = ['path' => $engine->getClassPath(), 'id' => $engine->getId()];
 			}
 		}
 		else
@@ -168,6 +172,7 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		{
 			$form->addCommandButton('loadDbUpdates', $this->plugin_object->txt('update_db'));
 		}
+        $form->addCommandButton('loadLanguages', $this->lng->txt('refresh_languages'));
 		$form->addCommandButton('saveConfigurationForm', $this->lng->txt('save'));
 
 		return $form;
@@ -178,7 +183,7 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 	 * @param $source
 	 * @return ilPropertyFormGUI
 	 */
-	protected function addPluginConfigForm($form, $source)
+	protected function addPluginConfigForm(ilPropertyFormGUI $form, $source)
 	{
 		$this->active_tab = $source;
 		$form->setTitle(ilInteractiveVideoPlugin::getInstance()->txt($source));
@@ -188,7 +193,10 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		return $form;
 	}
 
-	protected function addTabs()
+    /**
+     * @throws ilCtrlException
+     */
+    protected function addTabs()
 	{
 		$this->tabs->addSubTab('settings', $this->lng->txt('settings'),
 			$this->ctrl->getLinkTargetByClass('ilInteractiveVideoConfigGUI', 'view'));
@@ -203,10 +211,11 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		$this->tabs->setSubTabActive($this->active_tab);
 	}
 
-	/**
-	 *
-	 */
-	protected function saveConfigurationForm()
+    /**
+     * @throws ilCtrlException
+     * @throws ilCtrlException
+     */
+    protected function saveConfigurationForm()
 	{
 		$form = $this->getConfigurationForm();
 		if($form->checkInput())
@@ -218,7 +227,7 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 			}
 			catch(ilException $e)
 			{
-				ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
+                $this->tpl->setOnScreenMessage("failure", $this->lng->txt('trac_updatform_input_not_valide_edit_user'), true);
 			}
 		}
 
@@ -226,40 +235,53 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		$this->showConfigurationForm($form);
 	}
 
-	/**
-	 *
-	 */
-	protected function loadDbUpdates()
+    /**
+     * @throws ilCtrlException
+     * @throws ilCtrlException
+     */
+    protected function loadDbUpdates()
 	{
 		$form = $this->getConfigurationForm();
 		if($form->checkInput())
 		{
-			try
-			{
-				$this->saveForm($form);
-			}
-			catch(ilException $e)
-			{
-				ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
-			}
-		}
+            $this->saveForm($form);
+        }
 		$db_updater = new ilInteractiveVideoDbUpdater();
 		$db_updater->applyPluginUpdates();
 		$this->showConfigurationForm();
 	}
 
+    /**
+     * @throws ilCtrlException
+     */
+    protected function loadLanguages()
+    {
+        global $DIC;
+
+        $component_repository = $DIC["component.repository"];
+        foreach ($component_repository->getPlugins() as $plugin) {
+            if($plugin->getId() === 'xvid') {
+                $xvid_instance = $plugin;
+            }
+        }
+        $language = new ilInteractiveVideoLanguageHandler($xvid_instance);
+        $language->updateLanguages();
+        $DIC->ui()->mainTemplate()->setOnScreenMessage("info", $DIC->language()->txt("cmps_refresh_lng"), true);
+        $this->showConfigurationForm();
+    }
+
 	/**
 	 * @param ilPropertyFormGUI $form
 	 */
-	protected function saveForm($form)
+	protected function saveForm(ilPropertyFormGUI $form)
 	{
-		$settings = array();
+		$settings = [];
 		$min_selected = false;
 		foreach($form->getItems() as $key => $value)
 		{
 			if($value->getPostVar() != 'path_mapping')
 			{
-				$class = ilUtil::stripSlashes($value->getPostVar());
+				$class = ilInteractiveVideoPlugin::stripSlashesWrapping($value->getPostVar());
 				$setting = (int) $_POST[$class];
 				$settings[$class] = $setting;
 				if($setting == 1)
@@ -274,11 +296,11 @@ class ilInteractiveVideoConfigGUI extends ilPluginConfigGUI
 		}
 		if($min_selected)
 		{
-			$this->video_source_factory->saveSourceSettings(array('settings' => $settings, 'mappings' => $mapping));
+			$this->video_source_factory->saveSourceSettings(['settings' => $settings, 'mappings' => $mapping]);
 		}
 		else
 		{
-			ilUtil::sendFailure(ilInteractiveVideoPlugin::getInstance()->txt('select_at_least_one'), true);
+            $this->tpl->setOnScreenMessage("failure", $this->lng->txt('select_at_least_one'), true);
 		}
 	}
 }

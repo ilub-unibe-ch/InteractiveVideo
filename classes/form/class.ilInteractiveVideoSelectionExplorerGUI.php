@@ -1,20 +1,16 @@
 <?php
-/* Copyright (c) 1998-2016 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/Repository/classes/class.ilRepositoryExplorerGUI.php';
-
 /**
  * Class ilInteractiveVideoSelectionExplorerGUI
  * @author Michael Jansen <mjansen@databay.de>
  */
 class ilInteractiveVideoSelectionExplorerGUI extends ilRepositoryExplorerGUI
 {
-	protected $id;
+    protected string $id;
 
 	/**
 	 * @return string
 	 */
-	public function getId()
+    public function getId(): string
 	{
 		return $this->id;
 	}
@@ -22,7 +18,7 @@ class ilInteractiveVideoSelectionExplorerGUI extends ilRepositoryExplorerGUI
 	/**
 	 * @param $id
 	 */
-	public function setId($id)
+	public function setId($id): void
 	{
 		$this->id = __CLASS__ . '_' . $id;
 	}
@@ -30,17 +26,17 @@ class ilInteractiveVideoSelectionExplorerGUI extends ilRepositoryExplorerGUI
 	/**
 	 * {@inheritdoc}
 	 */
-	public function __construct($a_parent_obj, $a_parent_cmd)
+	public function __construct($a_parent_obj, string $a_parent_cmd)
 	{
 		parent::__construct($a_parent_obj, $a_parent_cmd);
-		$this->setTypeWhiteList(array());
-		$this->setTypeBlackList(array('prg'));
+		$this->setTypeWhiteList([]);
+		$this->setTypeBlackList(['prg']);
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
-	protected function isNodeSelectable($a_node)
+    protected function isNodeSelectable($a_node): bool
 	{
 		return true;
 	}
@@ -48,7 +44,7 @@ class ilInteractiveVideoSelectionExplorerGUI extends ilRepositoryExplorerGUI
 	/**
 	 * {@inheritdoc}
 	 */
-	function getNodeHref($a_node)
+    public function getNodeHref($a_node): string
 	{
 		return '#';
 	}

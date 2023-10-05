@@ -1,6 +1,4 @@
 <?php
-require_once dirname(__FILE__) . '/../class.ilInteractiveVideoPlugin.php';
-ilInteractiveVideoPlugin::getInstance()->includeClass('form/class.ilTextAreaInputCkeditor.php');
 
 class SimpleChoiceQuestionFormEditGUI
 {
@@ -26,10 +24,10 @@ class SimpleChoiceQuestionFormEditGUI
 
 	/**
 	 * ilSimpleChoiceQuestionFormEditGUI constructor.
-	 * @param ilInteractiveVideoPlugin $plugin
-	 * @param ilObjInteractiveVideo $object
+	 * @param ilInteractiveVideoPlugin|ilPlugin $plugin
+	 * @param ilObjInteractiveVideo    $object
 	 */
-	public function __construct($plugin, $object)
+	public function __construct(ilInteractiveVideoPlugin $plugin, ilObjInteractiveVideo $object)
 	{
 		/**
 		 * @var ilCtrl $ctrl
@@ -43,11 +41,14 @@ class SimpleChoiceQuestionFormEditGUI
 		$this->object = $object;
 	}
 
-	/**
-	 * @param bool $ajax
-	 * @return ilPropertyFormGUI
-	 */
-	public function initQuestionForm($ajax = false)
+    /**
+     * @param bool $ajax
+     * @return ilPropertyFormGUI
+     * @throws ilCtrlException
+     * @throws ilSystemStyleException
+     * @throws ilTemplateException
+     */
+	public function initQuestionForm(bool $ajax = false)
 	{
 	    global $tpl;
         $plugin = ilInteractiveVideoPlugin::getInstance();
@@ -86,9 +87,9 @@ class SimpleChoiceQuestionFormEditGUI
 
 	/**
 	 * @param ilPropertyFormGUI $form
-	 * @param bool $ajax
+	 * @param bool              $ajax
 	 */
-	protected function appendGeneralSettingsToQuestionForm($form, $plugin, $ajax = false)
+	protected function appendGeneralSettingsToQuestionForm(ilPropertyFormGUI $form, $plugin, bool $ajax = false)
 	{
 		if(!$ajax)
 		{
@@ -109,7 +110,7 @@ class SimpleChoiceQuestionFormEditGUI
 		if(isset($_POST['comment_time']))
 		{
 			$seconds = $_POST['comment_time'];
-			$time->setValueByArray(array('comment_time' => (int)$seconds));
+			$time->setValueByArray(['comment_time' => (int)$seconds]);
 		}
 		$form->addItem($time);
 
@@ -140,17 +141,22 @@ class SimpleChoiceQuestionFormEditGUI
 		$form->addItem($section_header);
 	}
 
-	/**
-	 * @param ilPropertyFormGUI $form
-	 */
-	protected function appendQuestionSettingsToQuestionForm($form)
+    /**
+     * @param ilPropertyFormGUI $form
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     * @throws ilSystemStyleException
+     * @throws ilTemplateException
+     * @throws ilWACException
+     */
+	protected function appendQuestionSettingsToQuestionForm(ilPropertyFormGUI $form)
 	{
 		$question_type = new ilSelectInputGUI($this->plugin->txt('question_type'), 'question_type');
-		$type_options  = array(
+		$type_options  = [
 			0 => $this->plugin->txt('single_choice'),
 			1 => $this->plugin->txt('multiple_choice'),
 			2 => $this->plugin->txt('reflection')
-		);
+        ];
 		$question_type->setOptions($type_options);
 		$question_type->setInfo($this->plugin->txt('question_type_info'));
 		$form->addItem($question_type);
@@ -159,13 +165,13 @@ class SimpleChoiceQuestionFormEditGUI
 		$question_text->setRequired(true);
 		$form->addItem($question_text);
 
-		$this->appendImageUploadForm($this->plugin, $form);
+		#$this->appendImageUploadForm($this->plugin, $form);
 
 		$neutral_type         = new ilSelectInputGUI($this->plugin->txt('neutral_type'), 'neutral_type');
-		$neutral_type_options = array(
+		$neutral_type_options = [
 			0 => $this->plugin->txt('with_correct'),
 			1 => $this->plugin->txt('neutral')
-		);
+        ];
 		$neutral_type->setOptions($neutral_type_options);
 		$neutral_type->setInfo($this->plugin->txt('neutral_type_info'));
 		$form->addItem($neutral_type);
@@ -178,21 +184,37 @@ class SimpleChoiceQuestionFormEditGUI
 
 	/**
 	 * @param ilInteractiveVideoPlugin $plugin
-	 * @param ilPropertyFormGUI $form
+	 * @param ilPropertyFormGUI        $form
 	 */
-	protected function appendImageUploadForm($plugin, $form)
+	protected function appendImageUploadForm(ilInteractiveVideoPlugin $plugin, ilPropertyFormGUI $form)
 	{
+        global $DIC;
+
+        $comment_id_post = $DIC->http()->wrapper()->post()->has('comment_id');
+        if($comment_id_post) {
+            $comment_id_post = $DIC->http()->wrapper()->post()->retrieve('comment_id', $DIC->refinery()->kindlyTo()->int());
+        }
+        $comment_id_get = $DIC->http()->wrapper()->query()->has('comment_id');
+        if($comment_id_get) {
+            $comment_id_get = $DIC->http()->wrapper()->query()->retrieve('comment_id', $DIC->refinery()->kindlyTo()->int());
+        }
 		$image_upload  = new ilInteractiveVideoPreviewPicker($plugin->txt('question_image'), 'question_image');
-		if(isset($_GET['comment_id']) || isset($_POST['comment_id']))
+		if($comment_id_post || $comment_id_get)
 		{
-			$comment_id = (int)$_GET['comment_id'] ? (int)$_GET['comment_id'] : (int)$_POST['comment_id'];
+            if(is_int($comment_id_post)) {
+                $comment_id = $comment_id_post;
+            } elseif(is_int($comment_id_get)) {
+                $comment_id = $comment_id_get;
+            }
 			if($comment_id != 0)
 			{
-				$question_data = $this->object->getQuestionDataById((int)$comment_id);
-				if(array_key_exists('question_data', $question_data) && array_key_exists('question_image', $question_data['question_data']) )
+				$question_data = $this->object->getQuestionDataById($comment_id);
+				if(array_key_exists('question_data', $question_data))
 				{
-					$image_upload->setValue($question_data['question_data']['question_image']);
-					$image_upload->setImage($question_data['question_data']['question_image']);
+                    if($question_data['question_data'] != null && array_key_exists('question_image', $question_data['question_data'])){
+                        $image_upload->setValue($question_data['question_data']['question_image']);
+                        $image_upload->setImage($question_data['question_data']['question_image']);
+                    }
 				}
 			}
 		}
@@ -213,7 +235,7 @@ class SimpleChoiceQuestionFormEditGUI
 	/**
 	 * @param ilPropertyFormGUI $form
 	 */
-	protected function appendCorrectFeedbackToQuestionForm($form)
+	protected function appendCorrectFeedbackToQuestionForm(ilPropertyFormGUI $form)
 	{
 		$feedback_correct  = xvidUtils::constructTextAreaFormElement('feedback_correct', 'feedback_correct');
 		$show_correct_icon = new ilCheckboxInputGUI($this->plugin->txt('show_correct_icon'), 'show_correct_icon');
@@ -229,7 +251,7 @@ class SimpleChoiceQuestionFormEditGUI
 		if(isset($_POST['jump_correct_ts']))
 		{
 			$seconds = $_POST['jump_correct_ts'];
-			$jump_correct_ts->setValueByArray(array('jump_correct_ts' => (int)$seconds));
+			$jump_correct_ts->setValueByArray(['jump_correct_ts' => (int)$seconds]);
 		}
 		$is_jump_correct->addSubItem($jump_correct_ts);
 		$feedback_correct->addSubItem($is_jump_correct);
@@ -237,10 +259,11 @@ class SimpleChoiceQuestionFormEditGUI
 		$form->addItem($feedback_correct);
 	}
 
-	/**
-	 * @param ilPropertyFormGUI $form
-	 */
-	protected function appendFeedbackWrongToQuestionForm($form)
+    /**
+     * @param ilPropertyFormGUI $form
+     * @throws ilCtrlException
+     */
+	protected function appendFeedbackWrongToQuestionForm(ilPropertyFormGUI $form)
 	{
 		$feedback_one_wrong = xvidUtils::constructTextAreaFormElement('feedback_one_wrong', 'feedback_one_wrong');
 		$show_wrong_icon    = new ilCheckboxInputGUI($this->plugin->txt('show_wrong_icon'), 'show_wrong_icon');
@@ -256,7 +279,7 @@ class SimpleChoiceQuestionFormEditGUI
 		if(isset($_POST['jump_wrong_ts']))
 		{
 			$seconds = $_POST['jump_wrong_ts'];
-			$jump_wrong_ts->setValueByArray(array('jump_correct_ts' => (int)$seconds));
+			$jump_wrong_ts->setValueByArray(['jump_correct_ts' => (int)$seconds]);
 		}
 		$is_jump_wrong->addSubItem($jump_wrong_ts);
 		$feedback_one_wrong->addSubItem($is_jump_wrong);
@@ -267,7 +290,7 @@ class SimpleChoiceQuestionFormEditGUI
 	/**
 	 * @param ilPropertyFormGUI $form
 	 */
-	protected function appendHiddenQuestionFormValues($form)
+	protected function appendHiddenQuestionFormValues(ilPropertyFormGUI $form)
 	{
 		$is_interactive = new ilHiddenInputGUI('is_interactive');
 		$is_interactive->setValue(1);
@@ -281,10 +304,12 @@ class SimpleChoiceQuestionFormEditGUI
 		$form->addItem($comment_id);
 	}
 
-	/**
-	 * @param ilPropertyFormGUI $form
-	 */
-	protected function appendWarningModalToQuestionForm($form)
+    /**
+     * @param ilPropertyFormGUI $form
+     * @throws ilSystemStyleException
+     * @throws ilTemplateException
+     */
+	protected function appendWarningModalToQuestionForm(ilPropertyFormGUI $form)
 	{
 		//Todo: what to do with the modal?
 		$modal = ilModalGUI::getInstance();
@@ -301,21 +326,20 @@ class SimpleChoiceQuestionFormEditGUI
 		$form->addItem($mod);
 	}
 
-	/**
-	 * @param ilPropertyFormGUI|ilSubEnabledFormPropertyGUI $form
-	 * @param $post_var
-	 */
+    /**
+     * @param ilPropertyFormGUI|ilSubEnabledFormPropertyGUI $form
+     * @param                                               $post_var
+     * @throws ilCtrlException
+     */
 	protected function appendRepositorySelector($form, $post_var)
 	{
-		$this->plugin->includeClass('form/class.ilInteractiveVideoSelectionExplorerGUI.php');
 		$this->ctrl->setParameterByClass('ilformpropertydispatchgui', 'postvar', $post_var);
 		$explorer_gui = new ilInteractiveVideoSelectionExplorerGUI(
-			array('ilpropertyformgui', 'ilformpropertydispatchgui', 'ilInteractiveVideoRepositorySelectorInputGUI'),
+			['ilpropertyformgui', 'ilformpropertydispatchgui', 'ilInteractiveVideoRepositorySelectorInputGUI'],
 			'handleExplorerCommand'
 		);
 		$explorer_gui->setId($post_var);
 
-		$this->plugin->includeClass('form/class.ilInteractiveVideoRepositorySelectorInputGUI.php');
 		$root_ref_id = new ilInteractiveVideoRepositorySelectorInputGUI(
 			$this->plugin->txt($post_var),
 			$post_var, $explorer_gui, false
@@ -324,9 +348,15 @@ class SimpleChoiceQuestionFormEditGUI
 		$root_ref_id->setInfo($this->plugin->txt($post_var . '_info'));
 		$form->addSubItem($root_ref_id);
 	}
-	/**
-	 * @return string
-	 */
+
+    /**
+     * @return string
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     * @throws ilSystemStyleException
+     * @throws ilTemplateException
+     * @throws ilWACException
+     */
 	public function getInteractiveForm()
 	{
 		$simple_choice = new SimpleChoiceQuestion();
@@ -349,10 +379,10 @@ class SimpleChoiceQuestionFormEditGUI
 		}
 		else
 		{
-			$answers = array();
+			$answers = [];
 			if(is_array($_POST) && array_key_exists('answer', $_POST) && sizeof($_POST['answer'])  > 0)
 			{
-				$post_answers = ilUtil::stripSlashesRecursive($_POST['answer']);
+				$post_answers = ilArrayUtil::stripSlashesRecursive($_POST['answer']);
 				foreach($post_answers as $key => $value)
 				{
 					$correct = 0;
@@ -360,12 +390,12 @@ class SimpleChoiceQuestionFormEditGUI
 					{
 						$correct = 1;
 					}
-					array_push($answers, array('answer' => $value, 'correct' => $correct));
+					array_push($answers, ['answer' => $value, 'correct' => $correct]);
 				}
 			}
 			$question->setVariable('JSON', json_encode($answers));
 			$question->setVariable('QUESTION_TYPE', 0);
-			$question->setVariable('QUESTION_TEXT', '');
+			$question->setVariable('QUESTION_TEXT');
 		}
 		$question->setVariable('LABEL_FEEDBACK_NEUTRAL',		json_encode($this->plugin->txt('feedback_neutral')));
 		$question->setVariable('LABEL_JUMP_NEUTRAL',			json_encode($this->plugin->txt('feedback_jump_neutral')));

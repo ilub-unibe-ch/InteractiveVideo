@@ -1,8 +1,5 @@
 <?php
-require_once './Services/Export/classes/class.ilXmlImporter.php';
-ilInteractiveVideoPlugin::getInstance()->includeClass('class.ilObjInteractiveVideo.php');
-ilInteractiveVideoPlugin::getInstance()->includeClass('class.ilInteractiveVideoXMLParser.php');
-ilInteractiveVideoPlugin::getInstance()->includeClass('../VideoSources/class.ilInteractiveVideoSourceFactory.php');
+
 /**
  * Class ilInteractiveVideoImporter
  */
@@ -18,28 +15,30 @@ class ilInteractiveVideoImporter extends ilXmlImporter
 	 */
 	protected $xml_file;
 
-	public function init()
+    public function init(): void
 	{
 		$this->qti_path = $this->getImportDirectory().'/Plugins/xvid/set_1/expDir_1';
 		$this->xml_file = $this->getImportDirectory().'/Plugins/xvid/set_1/export.xml';
 	}
 
     /**
-     * @param $a_entity
-     * @param $a_id
-     * @param $a_xml
-     * @param $a_mapping
-     * @return string|void
+     * @param string          $a_entity
+     * @param string          $a_id
+     * @param string          $a_xml
+     * @param ilImportMapping $a_mapping
+     * @return void
      * @throws ilDatabaseException
      * @throws ilObjectNotFoundException
      * @throws ilSaxParserException
      */
-	public function importXmlRepresentation($a_entity, $a_id, $a_xml, $a_mapping)
+    public function importXmlRepresentation(
+        string $a_entity,
+        string $a_id,
+        string $a_xml,
+        ilImportMapping $a_mapping
+    ): void
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $tree, $ilDB;
+        global $tree, $ilDB;
 
 		$this->init();
 
@@ -65,7 +64,7 @@ class ilInteractiveVideoImporter extends ilXmlImporter
 			$factory = new ilInteractiveVideoSourceFactory();
 			$source_obj = $factory->getVideoSourceObject($this->xvid_object->getSourceId());
 			$source_obj->afterImportParsing($this->xvid_object->getId(), $this->import_directory);
-			$comment_map = array();
+			$comment_map = [];
 			foreach($this->xvid_object->import_comment as $key => $comment)
 			{
 				$comment->setObjId($this->xvid_object->getId());
@@ -88,12 +87,12 @@ class ilInteractiveVideoImporter extends ilXmlImporter
 					{
 						$answer_id = $ilDB->nextId('rep_robj_xvid_qus_text');
 						$ilDB->insert('rep_robj_xvid_qus_text',
-							array(
-								'answer_id'   => array('integer',	$answer_id),
-								'question_id' => array('integer',	(int) $question_id),
-								'answer'      => array('text', 		ilUtil::stripSlashes($answer['text'])),
-								'correct'     => array('integer',	(int) $answer['correct'])
-							));
+							[
+                                'answer_id'   => ['integer', $answer_id],
+                                'question_id' => ['integer', $question_id],
+                                'answer'      => ['text', ilInteractiveVideoPlugin::stripSlashesWrapping($answer['text'])],
+                                'correct'     => ['integer', (int) $answer['correct']]
+                            ]);
 					}
 				}
 			}
@@ -101,15 +100,15 @@ class ilInteractiveVideoImporter extends ilXmlImporter
 		$a_mapping->addMapping('Plugins/xvid', 'xvid', $a_id, $this->xvid_object->getId());
 	}
 
-	/**
-	 * @param $xml_file
-	 */
-	private function setXmlFile($xml_file)
+    /**
+     * @param string $xml_file
+     */
+	private function setXmlFile(string $xml_file): void
 	{
 		$this->xml_file = $xml_file;
 	}
 
-	public function getXmlFile()
+	public function getXmlFile(): string
 	{
 		return $this->xml_file;
 	}

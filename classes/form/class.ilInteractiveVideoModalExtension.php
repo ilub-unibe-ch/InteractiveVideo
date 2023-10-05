@@ -1,17 +1,15 @@
 <?php
 
-require_once 'Services/UIComponent/Modal/classes/class.ilModalGUI.php';
-
 class ilInteractiveVideoModalExtension extends ilModalGUI
 {
 	const TYPE_XL = 'xlarge';
 
-	/**
-	 * Get HTML
-	 *
-	 * @return string html
-	 */
-	function getHTML()
+    /**
+     * Get HTML
+     * @return string html
+     * @throws ilTemplateException
+     */
+    public function getHTML(): string
 	{
 		$tpl = new ilTemplate("tpl.modal.html", true, true, "Services/UIComponent/Modal");
 
@@ -50,12 +48,11 @@ class ilInteractiveVideoModalExtension extends ilModalGUI
 		return $tpl->get();
 	}
 
-	/**
-	 * Get instance
-	 *
-	 * @return ilModalGUI panel instance
-	 */
-	static function getInstance()
+    /**
+     * Get instance
+     * @return ilInteractiveVideoModalExtension panel instance
+     */
+    public static function getInstance(): self
 	{
 		return new ilInteractiveVideoModalExtension();
 	}

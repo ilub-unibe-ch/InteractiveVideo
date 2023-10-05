@@ -1,26 +1,28 @@
 <?php
-require_once 'Services/MediaObjects/classes/class.ilFFmpeg.php';
-require_once 'Services/WebAccessChecker/classes/class.ilWACSignedPath.php';
-
 /**
  * Class ilInteractiveVideoFFmpeg
  */
 class ilInteractiveVideoFFmpeg extends ilFFmpeg
 {
-	/**
-	 * @param string $a_file
-	 * @param string $a_target_filename
-	 * @param string $a_target_dir
-	 * @param $a_sec
-	 * @return string
-	 * @throws ilFFmpegException
-	 */
-	static function extractImage($a_file, $a_target_filename, $a_target_dir = '', $a_sec = 1)
+    /**
+     * @param string $a_file
+     * @param string $a_target_filename
+     * @param string $a_target_dir
+     * @param int    $a_sec
+     * @return string
+     * @throws ilFFmpegException
+     */
+    public static function extractImage(
+        string $a_file,
+        string $a_target_filename,
+        string $a_target_dir = "",
+        int $a_sec = 1
+    ): string
 	{
 		$spi = pathinfo($a_file);
 		$target_dir = ($a_target_dir != '') ? $a_target_dir : $spi['dirname'];
 
-		ilUtil::makeDirParents($target_dir);
+		ilFileUtils::makeDirParents($target_dir);
 		$target_file = $target_dir.'/'.$a_target_filename;
 
 		$cmd = ' -ss '.ilUtil::escapeShellArg($a_sec).' -y -i '.ilUtil::escapeShellArg($a_file).' -r 1 -f image2 -vframes 1 '.ilUtil::escapeShellArg($target_file);
@@ -33,7 +35,6 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 		}
 		else
 		{
-			require_once './Services/MediaObjects/exceptions/class.ilFFmpegException.php';
 			throw new ilFFmpegException('It was not possible to extract an image from '.basename($a_file).'.');
 		}
 	}
@@ -48,9 +49,9 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
      * @throws ilFFmpegException
      * @throws ilWACException
      */
-	static function extractImageWrapper($a_file, $a_target_filename = '', $a_target_dir = '', $a_sec = 1, $return_json = false)
+	static function extractImageWrapper($a_file, string $a_target_filename = '', string $a_target_dir = '', int $a_sec = 1, bool $return_json = false)
 	{
-		$json_container = array();
+		$json_container = [];
 
 		$sec =  self::parseTimeString($a_sec);
 
@@ -60,7 +61,7 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 			{
 				$sec = $seconds_split[0] . '.' .$i;
 				$file = self::extractImage($a_file, $i . '.jpg', $a_target_dir, $sec);
-				$json_container[] = array('time' => $sec, 'img' => ilWACSignedPath::signFile($file . '?' . rand()));
+				$json_container[] = ['time' => $sec, 'img' => ilWACSignedPath::signFile($file . '?' . rand())];
 			}
 		}
 		
@@ -72,11 +73,11 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 
 	/**
 	 * @param $time
-	 * @return int|string
+	 * @return string
 	 */
 	protected static function parseTimeString($time)
 	{
-		if($matches = preg_split('/:/', $time))
+		if($matches = explode(':', $time))
 		{
 			if(is_array($matches) && sizeof($matches) == 3)
 			{
@@ -90,35 +91,35 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 		return $time;
 	}
 
-	/**
-	 * @param $hours
-	 * @param $minutes
-	 * @param $seconds
-	 * @return string
-	 */
-	protected static function escapeHourMinutesSeconds($hours, $minutes, $seconds)
+    /**
+     * @param $hours
+     * @param $minutes
+     * @param $seconds
+     * @return string
+     */
+	protected static function escapeHourMinutesSeconds($hours, $minutes, $seconds): string
 	{
 		$hours			= (int) $hours;
 		$minutes		= (int) $minutes;
 		return self::fillZeroIfSmallerTen($hours) . ':' . self::escapeMinutesSeconds($minutes, $seconds);
 	}
 
-	/**
-	 * @param $minutes
-	 * @param $seconds
-	 * @return string
-	 */
-	protected static function escapeMinutesSeconds($minutes, $seconds)
+    /**
+     * @param $minutes
+     * @param $seconds
+     * @return string
+     */
+	protected static function escapeMinutesSeconds($minutes, $seconds): string
 	{
 		$minutes		= (int) $minutes;
 		return self::fillZeroIfSmallerTen($minutes) . ':' . self::escapeSeconds($seconds);
 	}
 
-	/**
-	 * @param $seconds
-	 * @return string
-	 */
-	protected static function escapeSeconds($seconds)
+    /**
+     * @param $seconds
+     * @return string
+     */
+	protected static function escapeSeconds($seconds): string
 	{
 		$milliseconds	= 0;
 		if($seconds_split = preg_split('/\./', $seconds))
@@ -134,12 +135,9 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 	}
 
 	/**
-	 * @param int $comment_id
-	 * @param int $id
-	 * @param string $path_org
 	 * @return string
 	 */
-	public static function moveSelectedImage($comment_id, $id, $path_org)
+	public static function moveSelectedImage(int $comment_id, int $id, string $path_org)
 	{
 		$file_extension	= pathinfo($path_org, PATHINFO_EXTENSION);
 		if($file_extension != '' && preg_split('/\?/', $file_extension))
@@ -168,10 +166,7 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 		}
 	}
 
-	/**
-	 * @param string $path_to_file
-	 */
-	public static function removeSelectedImage($path_to_file)
+	public static function removeSelectedImage(string $path_to_file): void
 	{
 		if(file_exists($path_to_file))
 		{
@@ -180,10 +175,9 @@ class ilInteractiveVideoFFmpeg extends ilFFmpeg
 	}
 
 	/**
-	 * @param int $number
 	 * @return string
 	 */
-	protected static function fillZeroIfSmallerTen($number)
+	protected static function fillZeroIfSmallerTen(int $number)
 	{
 		if($number < 10)
 		{

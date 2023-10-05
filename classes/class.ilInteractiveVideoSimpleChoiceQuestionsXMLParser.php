@@ -1,8 +1,4 @@
 <?php
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilInteractiveVideoXMLParser.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilObjComment.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/questions/class.SimpleChoiceQuestion.php';
-
 /**
  * Class ilInteractiveVideoSimpleChoiceQuestionsXMLParser
  */
@@ -12,26 +8,15 @@ class ilInteractiveVideoSimpleChoiceQuestionsXMLParser extends ilInteractiveVide
 	 * @var 
 	 */
 	protected $xvid_obj;
+	protected bool $inAnswerTag = false;
 
 	/**
-	 * @var bool
-	 */
-	protected $inAnswerTag = false;
-
-	/**
-	 * @var string
+	 * @var mixed|null
 	 */
 	protected $video_src_id;
 
-	/**
-	 * @var int
-	 */
-	protected $comments = 0;
-
-	/**
-	 * @var int
-	 */
-	protected $questions = 0;
+	protected int $comments = 0;
+	protected int $questions = 0;
 
     /**
      * ilInteractiveVideoSimpleChoiceQuestionsXMLParser constructor.
@@ -51,7 +36,7 @@ class ilInteractiveVideoSimpleChoiceQuestionsXMLParser extends ilInteractiveVide
 	 * @param $tagName
 	 * @param $tagAttributes
 	 */
-	public function handlerBeginTag($xmlParser, $tagName, $tagAttributes)
+	public function handlerBeginTag($xmlParser, $tagName, $tagAttributes): void
 	{
 		switch($tagName)
 		{
@@ -94,7 +79,7 @@ class ilInteractiveVideoSimpleChoiceQuestionsXMLParser extends ilInteractiveVide
 				$this->inAnswerTag = true;
 				$text = $this->fetchAttribute($tagAttributes, 'text');
 				$correct = $this->fetchAttribute($tagAttributes, 'correct');
-				$this->xvid_obj->import_simple_choice[$this->comments]->import_answers[] = array('text' => $text, 'correct' => $correct);
+				$this->xvid_obj->import_simple_choice[$this->comments]->import_answers[] = ['text' => $text, 'correct' => $correct];
 				break;
 			case 'CommentId':
 				$this->comments++;
@@ -119,7 +104,7 @@ class ilInteractiveVideoSimpleChoiceQuestionsXMLParser extends ilInteractiveVide
 	 * @param $xmlParser
 	 * @param $tagName
 	 */
-	public function handlerEndTag($xmlParser, $tagName)
+	public function handlerEndTag($xmlParser, $tagName): void
 	{
 		switch($tagName)
 		{
@@ -215,17 +200,14 @@ class ilInteractiveVideoSimpleChoiceQuestionsXMLParser extends ilInteractiveVide
 		}
 	}
 
-	/**
-	 * @param $xmlParser
-	 */
-	public function setHandlers($xmlParser)
+    public function setHandlers($a_xml_parser): void
 	{
-		xml_set_object($xmlParser, $this);
-		xml_set_element_handler($xmlParser, 'handlerBeginTag', 'handlerEndTag');
-		xml_set_character_data_handler($xmlParser, 'handlerCharacterData');
+		xml_set_object($a_xml_parser, $this);
+		xml_set_element_handler($a_xml_parser, 'handlerBeginTag', 'handlerEndTag');
+		xml_set_character_data_handler($a_xml_parser, 'handlerCharacterData');
 	}
 
-	public function handlerCharacterData($xmlParser, $charData)
+	public function handlerCharacterData($xmlParser, $charData): void
 	{
 		if($charData != "\n")
 		{

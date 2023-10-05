@@ -1,11 +1,4 @@
 <?php
-/* Copyright (c) 1998-2017 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/Tracking/classes/class.ilLPStatusFactory.php';
-require_once 'Services/Tracking/classes/class.ilLPObjSettings.php';
-require_once 'Services/Tracking/classes/class.ilLearningProgressBaseGUI.php';
-require_once 'Services/Tracking/classes/class.ilOnlineTracking.php';
-
 /**
  * Class ilObjComment
  * @author Michael Jansen <mjansen@databay.de>
@@ -27,17 +20,17 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
     /**
      * @var ilLanguage
      */
-    public $lng;
+    protected ilLanguage $lng;
 
     /**
-     * @var ilCtrl
+     * @var ilCtrlInterface|ilCtrl
      */
-    public $ctrl;
+    protected ilCtrlInterface $ctrl;
 
     /**
-     * @var ilTemplate
+     * @var ilGlobalTemplateInterface|mixed
      */
-    public $tpl;
+    protected ilGlobalTemplateInterface $tpl;
 
     /**
      * @var ilInteractiveVideoPlugin
@@ -65,7 +58,7 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
     /**
      *
      */
-    public function executeCommand()
+    public function executeCommand(): void
     {
         $cmd = $this->ctrl->getCmd();
         $this->$cmd();
@@ -75,12 +68,15 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
     /**
      * @return int
      */
-    public function getObjId()
+    public function getObjId(): int
     {
         return $this->object->getId();
     }
 
-    private function addLearningProgressSubTabs()
+    /**
+     * @throws ilCtrlException
+     */
+    private function addLearningProgressSubTabs(): void
     {
         /**
          * @var $ilTabs ilTabsGUI
@@ -106,15 +102,18 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
+     * @throws ilException
+     * @throws ilObjectException
      */
-    public function showLPSettings(ilPropertyFormGUI $form = null)
+    public function showLPSettings(ilPropertyFormGUI $form = null): void
     {
         /**
          * @var $ilTabs ilTabsGUI
          */
         global $ilTabs;
 
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         $this->addLearningProgressSubTabs();
         $ilTabs->activateSubTab('lp_settings');
@@ -128,10 +127,11 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
 
     /**
      * Init property form
-     *
      * @return ilPropertyFormGUI $form
+     * @throws ilCtrlException
+     * @throws ilException
      */
-    public function getLearningProgressSettingsForm()
+    public function getLearningProgressSettingsForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->lng->txt('tracking_settings'));
@@ -167,23 +167,26 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
 
     /**
      * Save learning progress settings
+     * @throws ilCtrlException
+     * @throws ilCtrlException
      */
-    public function saveLearningProgressSettings()
+    public function saveLearningProgressSettings(): void
     {
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         $form = $this->getLearningProgressSettingsForm();
         if ($form->checkInput()) {
             $this->addLearningProgressSubTabs();
 
             $new_mode = (int) $form->getInput('modus');
-            $old_mode = (int) $this->object->getLearningProgressMode();
+            $old_mode = $this->object->getLearningProgressMode();
             $mode_changed = ($old_mode != $new_mode);
 
             $this->object->setLearningProgressMode($new_mode);
             $this->object->update();
 
-            ilUtil::sendSuccess($this->lng->txt('trac_settings_saved'), true);
+            $this->tpl->setOnScreenMessage("success", $this->lng->txt('trac_settings_saved'), true);
+
             if ($mode_changed) {
                 $this->ctrl->redirect($this, 'refreshStatusAndShowLPSettings');
             }
@@ -198,7 +201,7 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
     /**
      * 
      */
-    public function refreshStatusAndShowLPSettings()
+    public function refreshStatusAndShowLPSettings(): void
     {
         $this->object->refreshLearningProgress();
 
@@ -208,46 +211,49 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
     /**
      *
      */
-    public function showLPUsers()
+    public function showLPUsers(): void
     {
         /**
          * @var $ilTabs ilTabsGUI
          */
         global $ilTabs;
 
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         $this->addLearningProgressSubTabs();
         $ilTabs->activateSubTab('lp_users');
 
-        $this->gui->getPluginInstance()->includeClass('tables/class.ilInteractiveVideoLPUsersTableGUI.php');
         $table = new ilInteractiveVideoLPUsersTableGUI($this, 'showLPUsers', $this->object->getId(),
             $this->object->getRefId(), false);
-        $this->tpl->setContent(implode('<br />', array($table->getHTML(), $this->__getLegendHTML())));
+        $this->tpl->setContent(implode('<br />', [$table->getHTML(), $this->__getLegendHTML()]));
     }
 
     /**
      *
      */
-    public function showLPSummary()
+    public function showLPSummary(): void
     {
         /**
          * @var $ilTabs ilTabsGUI
          */
         global $ilTabs;
 
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         $this->addLearningProgressSubTabs();
         $ilTabs->activateSubTab('lp_summary');
 
-        $this->gui->getPluginInstance()->includeClass('tables/class.ilInteractiveVideoLPSummaryTableGUI.php');
-        $table = new ilInteractiveVideoLPSummaryTableGUI($this, 'showLPSummary', $this->object->getRefId(),
-            $this->gui->getPluginInstance());
-        $this->tpl->setContent(implode('<br />', array($table->getHTML(), $this->__getLegendHTML())));
+        $table = new ilInteractiveVideoLPSummaryTableGUI($this, 'showLPSummary', $this->object->getRefId());
+        $this->tpl->setContent(implode('<br />', [$table->getHTML(), $this->__getLegendHTML()]));
     }
 
-    public function showLPUserDetails()
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilDateTimeException
+     */
+    public function showLPUserDetails(): void
     {
         /**
          * @var $ilTabs ilTabsGUI
@@ -264,19 +270,16 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
             $this->ctrl->redirect($this->gui, $this->gui->getStandardCmd());
         }
 
-        include_once('./Services/InfoScreen/classes/class.ilInfoScreenGUI.php');
         $cloned_controller = clone $this;
         $cloned_controller->object = null;
         $info = new ilInfoScreenGUI($cloned_controller);
         $info->setFormAction($this->ctrl->getFormAction($this, 'editUser'));
         $info->addSection($this->lng->txt('trac_learning_progress'));
-        include_once("./Services/Tracking/classes/class.ilLearningProgressBaseGUI.php");
         $status = ilLearningProgressBaseGUI::__readStatus($this->object->getId(), $ilUser->getId());
         $status_path = ilLearningProgressBaseGUI::_getImagePathForStatus($status);
         $status_text = ilLearningProgressBaseGUI::_getStatusText($status);
         $info->addProperty($this->lng->txt('trac_status'),
             ilUtil::img($status_path, $status_text) . " " . $status_text);
-        include_once 'Services/Tracking/classes/class.ilLPMarks.php';
         if (strlen($mark = ilLPMarks::_lookupMark($ilUser->getId(), $this->object->getId()))) {
             $info->addProperty($this->lng->txt('trac_mark'), $mark);
         }
@@ -284,11 +287,17 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
             $info->addProperty($this->lng->txt('trac_comment'), $comment);
         }
 
-        $this->tpl->setContent(implode('<br />', array($info->getHTML(), $this->__getLegendHTML())));
+        $this->tpl->setContent(implode('<br />', [$info->getHTML(), $this->__getLegendHTML()]));
     }
 
     /**
-     * @param ilPropertyFormGUI $form
+     * @param ilPropertyFormGUI|null $form
+     * @return void|null
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilDateTimeException
+     * @throws ilObjectException
+     * @throws ilObjectNotFoundException
      */
     public function editUser(ilPropertyFormGUI $form = null)
     {
@@ -297,7 +306,7 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
          */
         global $ilTabs;
 
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         $this->addLearningProgressSubTabs();
         $ilTabs->activateSubTab('lp_users');
@@ -311,7 +320,6 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
             return $this->showLPUsers();
         }
 
-        include_once('./Services/InfoScreen/classes/class.ilInfoScreenGUI.php');
         $cloned_controller = clone $this;
         $cloned_controller->object = null;
         $info = new ilInfoScreenGUI($cloned_controller);
@@ -325,25 +333,24 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
         if (!$form instanceof ilPropertyFormGUI) {
             $form = $this->getLPMarksForm($user);
 
-            include_once 'Services/Tracking/classes/class.ilLPMarks.php';
             $marks = new ilLPMarks($this->object->getId(), $user->getId());
 
-            $form->setValuesByArray(array(
+            $form->setValuesByArray([
                 'comment' => $marks->getComment(),
                 'mark' => $marks->getMark()
-            ));
+            ]);
         }
 
-        $this->tpl->setContent(implode('<br />', array($form->getHtml(), $info->getHTML())));
+        $this->tpl->setContent(implode('<br />', [$form->getHtml(), $info->getHTML()]));
     }
 
     /**
      * @param ilObjUser $user
      * @return ilPropertyFormGUI
+     * @throws ilCtrlException
      */
-    protected function getLPMarksForm(ilObjUser $user)
+    protected function getLPMarksForm(ilObjUser $user): ilPropertyFormGUI
     {
-        require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
         $this->ctrl->setParameter($this, 'user_id', $user->getId());
         $form->setFormAction($this->ctrl->getFormAction($this, 'editUser'));
@@ -363,9 +370,16 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
         return $form;
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilObjectException
+     * @throws ilDateTimeException
+     */
     public function updateLPUsers()
     {
-        $this->gui->ensureAtLeastOnePermission(array('write', 'read_learning_progress'));
+        $this->gui->ensureAtLeastOnePermission(['write', 'read_learning_progress']);
 
         if (!isset($_GET['user_id'])) {
             return $this->showLPUsers();
@@ -378,16 +392,20 @@ class ilInteractiveVideoLearningProgressGUI extends ilLearningProgressBaseGUI
 
         $form = $this->getLPMarksForm($user);
         if ($form->checkInput()) {
-            include_once 'Services/Tracking/classes/class.ilLPMarks.php';
             $marks = new ilLPMarks($this->object->getId(), $user->getId());
             $marks->setMark($form->getInput('mark'));
             $marks->setComment($form->getInput('comment'));
             $marks->update();
-            ilUtil::sendSuccess($this->lng->txt('trac_update_edit_user'));
+            $this->tpl->setOnScreenMessage("success", $this->lng->txt('trac_update_edit_user'), true);
             return $this->showLPUsers();
         }
 
         $form->setValuesByPost();
         $this->editUser($form);
+    }
+
+    public function getCtrl(): ilCtrlInterface
+    {
+        return $this->ctrl;
     }
 }

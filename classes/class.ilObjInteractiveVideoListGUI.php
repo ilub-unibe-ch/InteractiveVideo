@@ -1,8 +1,6 @@
 <?php
 /* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/Repository/classes/class.ilObjectPluginListGUI.php';
-
 /**
  * Class ilObjInteractiveVideoListGUI
  * @author Nadia Ahmad <nahmad@databay.de>
@@ -12,7 +10,7 @@ class ilObjInteractiveVideoListGUI extends ilObjectPluginListGUI
 	/**
 	 * @return string
 	 */
-	public function getGuiClass()
+    public function getGuiClass(): string
 	{
 		return 'ilObjInteractiveVideoGUI';
 	}
@@ -20,27 +18,27 @@ class ilObjInteractiveVideoListGUI extends ilObjectPluginListGUI
 	/**
 	 * @return array
 	 */
-	public function initCommands()
+    public function initCommands(): array
 	{
-		return array
-		(
-			array(
+		return
+            [
+                [
 				'permission' => 'visible',
 				'cmd'        => 'showContent',
 				'default'    => true
-			),
-			array(
+                ],
+                [
 				'permission' => 'read',
 				'cmd'        => 'showContent',
 				'default'    => true
-			),
-			array(
+                ],
+                [
 				'permission' => 'write',
 				'cmd'        => 'editProperties',
 				'txt'        => $this->lng->txt('edit'),
 				'default'    => false
-			),
-		);
+                ],
+            ];
 	}
 
 	/**
@@ -51,21 +49,18 @@ class ilObjInteractiveVideoListGUI extends ilObjectPluginListGUI
 		$this->setType('xvid');
 	}
 
-	/**
-	 * @param string $a_item
-	 * @return array
-	 */
-	public function getProperties($a_item = '')
+    /**
+     * @return array
+     */
+    public function getProperties(): array
 	{
-		$props = array();
-
-		$this->plugin->includeClass('class.ilObjInteractiveVideoAccess.php');
+		$props = [];
 		if(!ilObjInteractiveVideoAccess::checkOnline($this->obj_id))
 		{
-			$props[] = array(
+			$props[] = [
 				'alert' => true, 'property' => $this->txt('status'),
 				'value' => $this->txt('offline')
-			);
+            ];
 		}
 		return $props;
 	}

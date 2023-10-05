@@ -1,8 +1,5 @@
 <?php
 
-require_once 'Services/Form/classes/class.ilImageFileInputGUI.php';
-require_once 'Services/UIComponent/Modal/classes/class.ilModalGUI.php';
-
 class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 {
 	/**
@@ -18,7 +15,7 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 	/**
 	 * @param ilTemplate $a_tpl
 	 */
-	function insert($a_tpl)
+    public function insert(ilTemplate $a_tpl): void
 	{
 		parent::insert($a_tpl);
 
@@ -30,10 +27,11 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 		}
 	}
 
-	/**
-	 * @param ilTemplate $a_tpl
-	 */
-	public function supportImageExtractionFromVideo($a_tpl)
+    /**
+     * @throws ilCtrlException
+     * @throws ilTemplateException
+     */
+    public function supportImageExtractionFromVideo(ilTemplate $a_tpl): void
 	{
 		global $tpl, $ilCtrl;
 		$tpl->addJavaScript('Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/js/form/InteractiveVideoPreviewPicker.js');
@@ -52,11 +50,11 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 		$hidden->insert($a_tpl);
 	}
 
-	/**
-	 * @param ilTemplate $a_tpl
-	 * @param ilCtrl $ilCtrl
-	 */
-	protected function addModalToTemplate($a_tpl, $ilCtrl)
+    /**
+     * @throws ilCtrlException
+     * @throws ilTemplateException
+     */
+    protected function addModalToTemplate(ilTemplate $a_tpl, ilCtrl $ilCtrl): void
 	{
 		$modal = ilModalGUI::getInstance();
 		$modal->setId('ffmpeg_extract_modal');
@@ -65,7 +63,7 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 		$video_tpl = new ilTemplate("tpl.ffmpeg_modal.html", false, false, 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/');
 
 		$time      = new ilInteractiveVideoTimePicker('ffmpeg_time_picker', 'ffmpeg_time_picker');
-		$video_tpl->setVariable('AJAX_URL', $ilCtrl->getLinkTarget(new ilObjInteractiveVideoGUI(), 'generateThumbnailsFromSourcePerAjax', '', true, false));
+		$video_tpl->setVariable('AJAX_URL', $ilCtrl->getLinkTarget(new ilObjInteractiveVideoGUI(), 'generateThumbnailsFromSourcePerAjax', '', true));
 		$video_tpl->setVariable('TIME_PICKER', $time->render());
 
 		$action = ilLinkButton::getInstance();
@@ -80,18 +78,12 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 		$a_tpl->parseCurrentBlock();
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isCanExtractImages()
+	public function isCanExtractImages(): bool
 	{
 		return $this->canExtractImages;
 	}
 
-	/**
-	 * @param bool $canExtractImages
-	 */
-	public function setCanExtractImages($canExtractImages)
+	public function setCanExtractImages(bool $canExtractImages): void
 	{
 		$this->canExtractImages = $canExtractImages;
 	}
@@ -99,7 +91,7 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 	/**
 	 * @return mixed
 	 */
-	public function getPathToVideo()
+	public function getPathToVideo(): string
 	{
 		return $this->path_to_video;
 	}
@@ -107,7 +99,7 @@ class ilInteractiveVideoPreviewPicker extends ilImageFileInputGUI
 	/**
 	 * @param mixed $path_to_video
 	 */
-	public function setPathToVideo($path_to_video)
+	public function setPathToVideo(string $path_to_video): void
 	{
 		$this->path_to_video = $path_to_video;
 	}

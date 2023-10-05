@@ -1,6 +1,5 @@
 <?php
 /* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
-require_once 'Services/User/classes/class.ilUserUtil.php';
 
 /**
  * Class SimpleChoiceQuestionStatistics
@@ -14,32 +13,27 @@ class SimpleChoiceQuestionStatistics
 	 */
 	public function getQuestionCountForObject($oid)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$res = $ilDB->queryF(
 			'SELECT count(question_id) count FROM rep_robj_xvid_comments comments, rep_robj_xvid_question questions
 					 WHERE comments.comment_id = questions.comment_id AND  is_interactive = 1 AND obj_id = %s',
-			array('integer'),
-			array((int)$oid)
+			['integer'],
+			[(int)$oid]
 		);
 		$row = $ilDB->fetchAssoc($res);
 		return (int)$row['count'];
 	}
 
-	/**
-	 * @param int $oid
-	 * @return array
-	 */
+    /**
+     * @param int $oid
+     * @return array
+     * @throws ilWACException
+     */
 	public function getPointsForUsers($oid)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
 
-		global $ilDB;
+        global $ilDB;
 
 		$questions_for_object = $this->getQuestionCountForObject($oid);
 
@@ -52,10 +46,10 @@ class SimpleChoiceQuestionStatistics
 			AND 	questions.question_id = score.question_id 
 			AND 	obj_id = %s 
 			GROUP BY user_id',
-			array('integer'), array((int)$oid)
+			['integer'], [(int)$oid]
 		);
 
-		$results = array();
+		$results = [];
 		$counter = 0;
 		while($row = $ilDB->fetchAssoc($res))
 		{
@@ -80,18 +74,16 @@ class SimpleChoiceQuestionStatistics
 		return $results;
 	}
 
-	/**
-	 * @param $oid
-	 * @return array
-	 */
+    /**
+     * @param $oid
+     * @return array
+     * @throws ilWACException
+     */
 	public function getScoreForAllQuestionsAndAllUser($oid)
 	{
 		$questions_list  = $this->getQuestionIdsForObject($oid);
 		$questions_count = $this->getQuestionCountForObject($oid);
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$res          = $ilDB->queryF('
 			SELECT score.user_id, points,questions.question_id, neutral_answer
@@ -101,10 +93,10 @@ class SimpleChoiceQuestionStatistics
 			WHERE 	comments.comment_id   = questions.comment_id 
 			AND 	questions.question_id = score.question_id 
 			AND 	obj_id = %s  ORDER BY comments.comment_time',
-			array('integer'), array((int)$oid)
+			['integer'], [(int)$oid]
 		);
-		$return_value = array('users' => array(), 'question' => array(), 'answers' => array());
-		$return_sums  = array();
+		$return_value = ['users' => [], 'question' => [], 'answers' => []];
+		$return_sums  = [];
 		$neutral = 0;
 		while($row = $ilDB->fetchAssoc($res))
 		{
@@ -175,7 +167,7 @@ class SimpleChoiceQuestionStatistics
 			AND 	comments.comment_id   = questions.comment_id 
 			AND 	text.answer_id = answers.answer_id
 			AND 	obj_id = %s  ORDER BY comments.comment_time',
-			array('integer'), array((int)$oid));
+			['integer'], [(int)$oid]);
 		while($row = $ilDB->fetchAssoc($res))
 		{
 			$return_value['answers'][$row['user_id']][$row['question_id']] .= chr(13) . $row['answer'];
@@ -189,17 +181,14 @@ class SimpleChoiceQuestionStatistics
 	 */
 	public function getQuestionIdsForObject($oid)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
-		$result_set = array();
+		$result_set = [];
 		$res        = $ilDB->queryF(
 			'SELECT question_id, comment_title FROM rep_robj_xvid_comments comments, rep_robj_xvid_question questions
 					 WHERE comments.comment_id = questions.comment_id AND  is_interactive = 1 AND obj_id = %s ORDER BY comment_time',
-			array('integer'),
-			array((int)$oid)
+			['integer'],
+			[(int)$oid]
 		);
 		while($row = $ilDB->fetchAssoc($res))
 		{
@@ -219,10 +208,7 @@ class SimpleChoiceQuestionStatistics
 	 */
 	public function getQuestionsOverview($oid)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$res       = $ilDB->queryF(
 			'SELECT questions.question_id, questions.neutral_answer, score.user_id, score.points, comments.comment_id, comments.comment_title
@@ -231,10 +217,10 @@ class SimpleChoiceQuestionStatistics
 			WHERE comments.comment_id = questions.comment_id
 			AND is_interactive =1
 			AND obj_id = %s',
-			array('integer'),
-			array((int)$oid)
+			['integer'],
+			[(int)$oid]
 		);
-		$questions = array();
+		$questions = [];
 		while($row = $ilDB->fetchAssoc($res))
 		{
 			if($row['points'] == null)
@@ -252,7 +238,7 @@ class SimpleChoiceQuestionStatistics
 			$questions[$row['question_id']]['neutral_answer'] = $row['neutral_answer'];
 
 		}
-		$results = array();
+		$results = [];
 		$counter = 0;
 		foreach($questions as $key => $value)
 		{
@@ -271,8 +257,8 @@ class SimpleChoiceQuestionStatistics
 			{
 				if($value['answered'] > 0)
 				{
-					$results[$counter]['percentage'] = round(($value['correct'] / $value['answered']) * 100, 2);;
-				}
+					$results[$counter]['percentage'] = round(($value['correct'] / $value['answered']) * 100, 2);
+                }
 				else
 				{
 					$results[$counter]['percentage'] = 0;
@@ -292,18 +278,15 @@ class SimpleChoiceQuestionStatistics
 	 */
 	public function getAnsweredQuestionsFromUser($oid, $uid)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$res = $ilDB->queryF(
 			'SELECT count(score.question_id)  count FROM rep_robj_xvid_comments  comments, 
 							rep_robj_xvid_question questions, rep_robj_xvid_score  score
 					 WHERE comments.comment_id = questions.comment_id AND questions.question_id = score.question_id 
 					 		AND is_interactive = 1 AND obj_id = %s AND score.user_id = %s',
-			array('integer', 'integer'),
-			array((int)$oid, $uid)
+			['integer', 'integer'],
+			[(int)$oid, $uid]
 		);
 		$row = $ilDB->fetchAssoc($res);
 		return (int)$row['count'];
@@ -315,20 +298,17 @@ class SimpleChoiceQuestionStatistics
 	 */
 	public function getResponseFrequency($question_id)
 	{
-        /**
-         * @var $ilDB ilDBInterface
-         */
-		global $ilDB;
+        global $ilDB;
 
 		$res          = $ilDB->queryF(
 			'SELECT rep_robj_xvid_answers.answer_id, count(rep_robj_xvid_answers.answer_id) AS counter FROM rep_robj_xvid_question
 				LEFT JOIN rep_robj_xvid_qus_text ON rep_robj_xvid_qus_text.question_id = rep_robj_xvid_question.question_id 
 				RIGHT JOIN rep_robj_xvid_answers ON rep_robj_xvid_qus_text.answer_id = rep_robj_xvid_answers.answer_id
 				WHERE  rep_robj_xvid_question.question_id = %s GROUP BY rep_robj_xvid_answers.answer_id',
-			array('integer'),
-			array((int)$question_id)
+			['integer'],
+			[(int)$question_id]
 		);
-		$answer_stats = array();
+		$answer_stats = [];
 		while($row = $ilDB->fetchAssoc($res))
 		{
 			$answer_stats[$row['answer_id']] = $row['counter'];

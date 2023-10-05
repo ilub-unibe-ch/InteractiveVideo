@@ -1,6 +1,4 @@
 <?php
-require_once 'Services/Form/classes/class.ilTextAreaInputGUI.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/class.ilHtmlInteractiveVideoPostPurifier.php';
 /**
  * Class ilTextAreaInputCkeditorGUI
  */
@@ -12,7 +10,7 @@ class ilTextAreaInputCkeditorGUI extends ilTextAreaInputGUI
 	 * @param string $a_title
 	 * @param string $a_postvar
 	 */
-	public function __construct($a_title = "", $a_postvar = "")
+	public function __construct(string $a_title = "", string $a_postvar = "")
 	{
 		parent::__construct($a_title, $a_postvar);
 		$this->setType("textarea");
@@ -22,15 +20,15 @@ class ilTextAreaInputCkeditorGUI extends ilTextAreaInputGUI
 
     /**
      * @param ilTemplate $a_tpl
-     * @return int|void
+     * @return void
      * @throws ilTemplateException
      */
-	public function insert($a_tpl)
+    public function insert(ilTemplate $a_tpl): void
 	{
 		$this->appendJavascriptFile();
 		$ttpl = new ilTemplate("tpl.textarea_ckeditor.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/");
 
-		$ttpl->setVariable("PROPERTY_VALUE", ilUtil::prepareFormOutput($this->getValue()));
+		$ttpl->setVariable("PROPERTY_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($this->getValue()));
 		$ttpl->setVariable("FIELD_ID", $this->getFieldId());
 		$ttpl->setVariable("FIELD_NAME", $this->getPostVar());
 
@@ -39,7 +37,7 @@ class ilTextAreaInputCkeditorGUI extends ilTextAreaInputGUI
 		$a_tpl->parseCurrentBlock();
 	}
 	
-	public static function appendJavascriptFile()
+	public static function appendJavascriptFile(): void
 	{
 		/**
 		 * @var $tpl ilTemplate

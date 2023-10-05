@@ -1,8 +1,4 @@
 <?php
-/* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/Html/classes/class.ilHtmlPurifierAbstractLibWrapper.php';
-
 /**
  * Class ilHtmlInteractiveVideoPostPurifier
  */
@@ -39,8 +35,6 @@ class ilHtmlInteractiveVideoPostPurifier extends ilHtmlPurifierAbstractLibWrappe
 	*/
 	protected function getPurifierConfigInstance() : HTMLPurifier_Config
 	{
-		include_once 'Services/AdvancedEditing/classes/class.ilObjAdvancedEditing.php';
-		
 		$config = HTMLPurifier_Config::createDefault();
 		$config->set('HTML.DefinitionID', 'ilias interactivevideo post');
 		$config->set('HTML.DefinitionRev', 1);

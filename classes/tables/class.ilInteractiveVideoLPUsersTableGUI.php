@@ -1,37 +1,32 @@
 <?php
-/* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/Tracking/classes/repository_statistics/class.ilTrObjectUsersPropsTableGUI.php';
-require_once 'Services/Object/classes/class.ilObjectLP.php';
-require_once 'Services/Tracking/classes/status/class.ilLPStatusEvent.php';
 /**
  * Class ilInteractiveVideoLPUsersTableGUI
  */
 class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 {
-	/**
-	 * ilInteractiveVideoLPUsersTableGUI constructor.
-	 * @param        $a_parent_obj
-	 * @param string $a_parent_cmd
-	 * @param string $a_obj_id
-	 * @param        $a_ref_id
-	 * @param bool   $a_print_view
-	 */
-	function __construct($a_parent_obj, $a_parent_cmd, $a_obj_id, $a_ref_id, $a_print_view = false)
+    /**
+     * ilInteractiveVideoLPUsersTableGUI constructor.
+     * @param object|null $a_parent_obj
+     * @param string      $a_parent_cmd
+     * @param int         $a_obj_id
+     * @param int         $a_ref_id
+     * @param bool        $a_print_view
+     */
+	function __construct(?object $a_parent_obj, string $a_parent_cmd, int $a_obj_id, int $a_ref_id, bool $a_print_view = false)
 	{
 		parent::__construct($a_parent_obj, $a_parent_cmd, $a_obj_id, $a_ref_id, true); 
 		$this->setPrintMode($a_print_view);
 		$this->setRowTemplate("tpl.object_users_props_row.html", $this->parent_obj->plugin->getDirectory());
 		if(!$a_print_view)
 		{
-			$this->addColumn($this->lng->txt("actions"), "");
+			$this->addColumn($this->lng->txt("actions"));
 		}
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	protected function parseTitle($a_obj_id, $action, $a_user_id = false)
+	protected function parseTitle($a_obj_id, $action, $a_user_id = false): void
 	{
 		/**
 		 * @var $lng ilLanguage
@@ -60,9 +55,9 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	protected function isPercentageAvailable($a_obj_id)
+    protected function isPercentageAvailable(int $a_obj_id): bool
 	{
 		if($this->isLearningProgressDeactivated())
 		{
@@ -75,7 +70,7 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 	/**
 	 * {@inheritdoc}
 	 */
-	public function searchFilterListener($a_ref_id, $a_data)
+    public function searchFilterListener(int $a_ref_id, array $a_data): bool
 	{
 		$status = parent::searchFilterListener($a_ref_id, $a_data);
 
@@ -90,10 +85,15 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 		return $status;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function getSelectableUserColumns($a_in_course = false, $a_in_group = false)
+    /**
+     * @param int $a_in_course
+     * @param int $a_in_group
+     * @return array
+     */
+    protected function getSelectableUserColumns(
+        int $a_in_course = 0,
+        int $a_in_group = 0
+    ): array
 	{
 		$columns = parent::getSelectableUserColumns($a_in_course, $a_in_group);
 
@@ -106,10 +106,10 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 		return $columns;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	function getSelectableColumns()
+    /**
+     * @return array
+     */
+	public function getSelectableColumns(): array
 	{
 		$columns = parent::getSelectableColumns();
 
@@ -122,26 +122,32 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 		return $columns;
 	}
 
-	/**
-	 * @return bool
-	 */
-	protected function isLearningProgressDeactivated()
+	protected function isLearningProgressDeactivated(): bool
 	{
-		return in_array($this->parent_obj->object->getLearningProgressMode(), array(ilObjInteractiveVideo::LP_MODE_DEACTIVATED));
+		return in_array($this->parent_obj->object->getLearningProgressMode(), [ilObjInteractiveVideo::LP_MODE_DEACTIVATED]);
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	public function initFilter($a_split_learning_resources = false, $a_include_no_status_filter = true)
+    public function initFilter(): void
 	{
-		$this->filter = array();
+		$this->filter = [];
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function fillRow($data)
+    /**
+     * {@inheritdoc}
+     * @throws ilDateTimeException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     * @throws ilTemplateException
+     */
+    protected function fillRow(array $a_set): void
 	{
 		/**
 		 * @var $lng    ilLanguage
@@ -150,9 +156,9 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 
 		foreach ($this->getSelectedColumns() as $c)
 		{
-			if($c == 'status' && $data[$c] != ilLPStatus::LP_STATUS_COMPLETED_NUM)
+			if($c == 'status' && $a_set[$c] != ilLPStatus::LP_STATUS_COMPLETED_NUM)
 			{
-				$timing = $this->showTimingsWarning($this->ref_id, $data["usr_id"]);
+				$timing = $this->showTimingsWarning($this->ref_id, $a_set["usr_id"]);
 				if($timing)
 				{
 					if($timing !== true)
@@ -171,7 +177,7 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 			}
 
 			// #7694
-			if($c == 'login' && !$data["active"])
+			if($c == 'login' && !$a_set["active"])
 			{
 				$this->tpl->setCurrentBlock('inactive_bl');
 				$this->tpl->setVariable('TXT_INACTIVE', $lng->txt("inactive"));
@@ -179,19 +185,19 @@ class ilInteractiveVideoLPUsersTableGUI extends ilTrObjectUsersPropsTableGUI
 			}
 
 			$this->tpl->setCurrentBlock("user_field");
-			$val = $this->parseValue($c, $data[$c], "user");
+			$val = $this->parseValue($c, $a_set[$c], "user");
 			$this->tpl->setVariable("VAL_UF", $val);
 			$this->tpl->parseCurrentBlock();
 		}
 
-		$this->getParentObject()->ctrl->setParameter($this->getParentObject(), "user_id", $data["usr_id"]);
+		$this->getParentObject()->getCtrl()->setParameter($this->getParentObject(), "user_id", $a_set["usr_id"]);
 		if(!$this->getPrintMode())
 		{
 			$this->tpl->setCurrentBlock("item_command");
-			$this->tpl->setVariable("HREF_COMMAND", $this->getParentObject()->ctrl->getLinkTarget($this->getParentObject(), "editUser"));
+			$this->tpl->setVariable("HREF_COMMAND", $this->getParentObject()->getCtrl()->getLinkTarget($this->getParentObject(), "editUser"));
 			$this->tpl->setVariable("TXT_COMMAND", $lng->txt('edit'));
 			$this->tpl->parseCurrentBlock();
 		}
-		$this->getParentObject()->ctrl->setParameter($this->getParentObject(), "user_id", '');
+		$this->getParentObject()->getCtrl()->setParameter($this->getParentObject(), "user_id", '');
 	}
 }

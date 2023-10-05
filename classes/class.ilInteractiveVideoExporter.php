@@ -1,11 +1,10 @@
 <?php
-require_once './Services/Export/classes/class.ilXmlExporter.php';
-
 /**
  * Class ilInteractiveVideoExporter
  */
 class ilInteractiveVideoExporter extends ilXmlExporter
 {
+    public const OBJ_TYPE = 'xvid';
 	/**
 	 * @var ilXmlWriter
 	 */
@@ -36,10 +35,12 @@ class ilInteractiveVideoExporter extends ilXmlExporter
 	 */
 	protected $filename;
 
-	public function getXmlRepresentation($a_entity, $a_schema_version, $a_id)
+    public function getXmlRepresentation(
+        string $a_entity,
+        string $a_schema_version,
+        string $a_id
+    ): string
 	{
-		ilInteractiveVideoPlugin::getInstance()->includeClass('class.ilObjInteractiveVideo.php');
-
 		$ref_id = current(ilObject::_getAllReferences($a_id));
 		$this->obj_id		= $a_id;
 		$this->object		= new ilObjInteractiveVideo($ref_id);
@@ -54,36 +55,38 @@ class ilInteractiveVideoExporter extends ilXmlExporter
 		return $this->xml_writer->xmlDumpMem();
 	}
 
-	public function exportXMLMetaData()
+	public function exportXMLMetaData(): void
 	{
-		require_once 'Services/MetaData/classes/class.ilMD2XML.php';
 		$md2xml = new ilMD2XML($this->object->getId(), 0, $this->object->getType());
-		$md2xml->setExportMode(true);
+		$md2xml->setExportMode();
 		$md2xml->startExport();
 		$this->xml_writer->appendXML($md2xml->getXML());
 	}
 
-	public function init()
+    public function init(): void
 	{
 
 	}
 
-	public function getValidSchemaVersions($a_entity)
+    /**
+     * @return array<string, array{namespace: string, uses_dataset: bool, min: string, max: string}>
+     */
+    public function getValidSchemaVersions(string $a_entity): array
 	{
-		return array(
-			'5.2.0' => array(
-				'namespace'    => 'http://www.ilias.de/',
-				#'xsd_file'     => 'xtsf_5_1.xsd',
-				'uses_dataset' => false,
-				'min'          => '5.2.0',
-				'max'          => '5.2.999'
-			)
-		);
+        return [
+            '5.2.0' => [
+                'namespace' => 'http://www.ilias.de/Modules/ContentPage/' . self::OBJ_TYPE . '/5_4',
+                'xsd_file' => 'ilias_' . self::OBJ_TYPE . '_5_2.xsd',
+                'uses_dataset' => false,
+                'min' => '5.2.0',
+                'max' => '',
+            ],
+        ];
 	}
 
-	public function exportPagesXML()
+	public function exportPagesXML(): void
 	{
-		$attr         = array();
+		$attr         = [];
 		$attr["Type"] = "ilInteractiveVideo";
 		$this->xml_writer->xmlStartTag("ContentObject", $attr);
 
@@ -97,52 +100,51 @@ class ilInteractiveVideoExporter extends ilXmlExporter
 		$this->xml_writer->xmlEndTag("ContentObject");
 	}
 
-	private function exportXMLSettings()
+	private function exportXMLSettings(): void
 	{
-		$src_id = (string)$this->object->getSourceId();
-		$this->xml_writer->xmlStartTag('Settings', array('video_source_id' => $src_id));
+		$src_id = $this->object->getSourceId();
+		$this->xml_writer->xmlStartTag('Settings', ['video_source_id' => $src_id]);
 
-		$this->xml_writer->xmlElement('Title', null, (string)$this->object->getTitle());
-		$this->xml_writer->xmlElement('Description', null, (string)$this->object->getDescription());
+		$this->xml_writer->xmlElement('Title', null, $this->object->getTitle());
+		$this->xml_writer->xmlElement('Description', null, $this->object->getDescription());
 		$this->xml_writer->xmlElement('Online', null, (int)$this->object->isOnline());
 
-		$this->xml_writer->xmlElement('isAnonymized', null, (int)$this->object->isAnonymized());
-		$this->xml_writer->xmlElement('isRepeat', null, (int)$this->object->isRepeat());
-		$this->xml_writer->xmlElement('isChronologic', null, (int)$this->object->isChronologic());
-		$this->xml_writer->xmlElement('isPublic', null, (int)$this->object->isPublic());
-		$this->xml_writer->xmlElement('getTaskActive', null, (int)$this->object->getTaskActive());
-		$this->xml_writer->xmlElement('getTask', null, (string)$this->object->getTask());
-		$this->xml_writer->xmlElement('getLearningProgressMode', null, (int)$this->object->getLearningProgressMode());
-		$this->xml_writer->xmlElement('noComment', null, (int)$this->object->getEnableComment());
-		$this->xml_writer->xmlElement('noToolbar', null, (int)$this->object->getEnableToolbar());
-		$this->xml_writer->xmlElement('showTocFirst', null, (int)$this->object->getShowTocFirst());
+		$this->xml_writer->xmlElement('isAnonymized', null, $this->object->isAnonymized());
+		$this->xml_writer->xmlElement('isRepeat', null, $this->object->isRepeat());
+		$this->xml_writer->xmlElement('isChronologic', null, $this->object->isChronologic());
+		$this->xml_writer->xmlElement('isPublic', null, $this->object->isPublic());
+		$this->xml_writer->xmlElement('getTaskActive', null, $this->object->getTaskActive());
+		$this->xml_writer->xmlElement('getTask', null, $this->object->getTask());
+		$this->xml_writer->xmlElement('getLearningProgressMode', null, $this->object->getLearningProgressMode());
+		$this->xml_writer->xmlElement('noComment', null, $this->object->getEnableComment());
+		$this->xml_writer->xmlElement('noToolbar', null, $this->object->getEnableToolbar());
+		$this->xml_writer->xmlElement('showTocFirst', null, $this->object->getShowTocFirst());
 		$this->xml_writer->xmlElement('fixedModal', null, (int)$this->object->isFixedModal());
 		$this->xml_writer->xmlElement('autoResumeAfterQuestion', null, (int)$this->object->isAutoResumeAfterQuestion());
-		$this->xml_writer->xmlElement('studentMarker', null, (int)$this->object->getMarkerForStudents());
-		$this->xml_writer->xmlElement('noCommentStream', null, (int)$this->object->getNoCommentStream());
+		$this->xml_writer->xmlElement('studentMarker', null, $this->object->getMarkerForStudents());
+		$this->xml_writer->xmlElement('noCommentStream', null, $this->object->getNoCommentStream());
 
 		$this->exportQuestions();
 		$this->exportVideoSourceObject();
 		$this->xml_writer->xmlEndTag('Settings');
 	}
 
-	private function exportVideoSourceObject()
+	private function exportVideoSourceObject(): void
 	{
-		$src_id = (string)$this->object->getSourceId();
-		$this->xml_writer->xmlStartTag('VideoSource', array('source_id' => $src_id));
+		$src_id = $this->object->getSourceId();
+		$this->xml_writer->xmlStartTag('VideoSource', ['source_id' => $src_id]);
 		$this->xml_writer->xmlElement('VideoSourceObject', null, $src_id);
 		$obj = $this->object->getVideoSourceObject($src_id);
 		$obj->doExportVideoSource($this->obj_id, $this->xml_writer, $this->export_dir);
 		$this->xml_writer->xmlEndTag('VideoSource');
 	}
 
-	private function exportQuestions()
+	private function exportQuestions(): void
 	{
 		/**
 		 * @var $ilDB   ilDB
 		 */
 		global $ilDB;
-		require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/classes/questions/class.SimpleChoiceQuestion.php';
 		$this->xml_writer->xmlStartTag('Questions');
 		$simple_questions = new SimpleChoiceQuestion();
 		$question_ids = $simple_questions->getInteractiveQuestionIdsByObjId($this->obj_id);
@@ -191,18 +193,18 @@ class ilInteractiveVideoExporter extends ilXmlExporter
 						if(file_exists($path))
 						{
 							$export_path = $this->export_dir . '/' . $qid . '/';
-							ilUtil::makeDirParents($export_path);
+                            ilFileUtils::makeDirParents($export_path);
 							copy($path, $export_path . basename($path));
 						}
-						$this->xml_writer->xmlElement('QuestionImage', array('qid' => $qid, 'file' => '/Plugins/xvid/set_1/expDir_1/' . $qid . '/' . basename($path)));
+						$this->xml_writer->xmlElement('QuestionImage', ['qid' => $qid, 'file' => '/Plugins/xvid/set_1/expDir_1/' . $qid . '/' . basename($path)]);
 					}
 
 					$this->xml_writer->xmlStartTag('Answers');
 					$res = $ilDB->queryF('SELECT * FROM rep_robj_xvid_qus_text WHERE question_id = %s',
-						array('integer'), array((int)$qid));
+						['integer'], [(int)$qid]);
 					while($row = $ilDB->fetchAssoc($res))
 					{
-						$this->xml_writer->xmlElement('Answer', array('text' => $row['answer'], 'correct' => $row['correct']));
+						$this->xml_writer->xmlElement('Answer', ['text' => $row['answer'], 'correct' => $row['correct']]);
 					}
 					$this->xml_writer->xmlEndTag('Answers');
 				}

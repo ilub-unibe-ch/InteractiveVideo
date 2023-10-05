@@ -1,8 +1,4 @@
 <?php
-/* Copyright (c) 1998-2016 ILIAS open source, Extended GPL, see docs/LICENSE */
-
-require_once 'Services/UIComponent/Explorer2/classes/class.ilExplorerSelectInputGUI.php';
-
 /**
  * Class ilInteractiveVideoRepositorySelectorInputGUI
  * @author Michael Jansen <mjansen@databay.de>
@@ -10,15 +6,15 @@ require_once 'Services/UIComponent/Explorer2/classes/class.ilExplorerSelectInput
  */
 class ilInteractiveVideoRepositorySelectorInputGUI extends ilExplorerSelectInputGUI
 {
-	/**
-	 * @var ilInteractiveVideoReferenceSelectionExplorerGUI
-	 */
-	protected $explorer_gui;
+    /**
+     * @var ilExplorerBaseGUI
+     */
+    protected ilExplorerBaseGUI $explorer_gui;
 
 	/**
-	 * {@inheritdoc}
+	 * {}
 	 */
-	public function __construct($title, $a_postvar, $a_explorer_gui, $a_multi = false)
+	public function __construct(string $title, string $a_postvar, $a_explorer_gui, bool $a_multi = false)
 	{
 		$this->explorer_gui = $a_explorer_gui;
 		$this->explorer_gui->setSelectMode($a_postvar.'_sel', $a_multi);
@@ -30,7 +26,7 @@ class ilInteractiveVideoRepositorySelectorInputGUI extends ilExplorerSelectInput
 	/**
 	 * @inheritdoc
 	 */
-	function setValue($a_value)
+    public function setValue($a_value): void
 	{
 		if ($this->explorer_gui) {
 			if (is_array($a_value)) {
@@ -50,7 +46,7 @@ class ilInteractiveVideoRepositorySelectorInputGUI extends ilExplorerSelectInput
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getTitleForNodeId($a_id)
+    public function getTitleForNodeId($a_id): string
 	{
 		return ilObject::_lookupTitle(ilObject::_lookupObjId($a_id));
 	}
