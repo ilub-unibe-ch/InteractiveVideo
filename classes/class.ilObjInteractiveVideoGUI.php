@@ -471,16 +471,20 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		 */
 		global $lng, $ilObjDataCache;
 
+        $ref_id = 0;
         $get = $this->http->wrapper()->query();
         if($get->has('xvid_referrer_ref_id')){
             $xvid_referrer_ref_id = $get->retrieve('xvid_referrer_ref_id', $this->refinery->kindlyTo()->int());
         }
 
+        $xvid_referrer = '';
         if($get->has('xvid_referrer')){
             $xvid_referrer = $get->retrieve('xvid_referrer', $this->refinery->kindlyTo()->string());
             $xvid_referrer = ilInteractiveVideoPlugin::stripSlashesWrapping($xvid_referrer);
         }
-		$ref_id = (int) $xvid_referrer_ref_id;
+        if (isset($xvid_referrer_ref_id)) {
+            $ref_id = (int) $xvid_referrer_ref_id;
+        }
 		$link = urldecode($xvid_referrer);
 		$url = parse_url(ILIAS_HTTP_PATH);
 		$link = $url['scheme'] . '://' . $url['host'] . (isset($url['port']) ?  ':' . $url['port'] : '') . $link;
@@ -631,7 +635,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 
         foreach($this->custom_javascript as $file)
         {
-            $tpl->addJavaScript($this->plugin->getDirectory() . $file);
+            $tpl->addJavaScript($this->plugin->getDirectory() . $file, true, 2);
         }
     }
 
@@ -1180,12 +1184,12 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	{
 	    global $DIC;
         $get = $this->http->wrapper()->query();
+        $customJS = '';
         if($get->has('xvid_custom_js')){
             $customJS = $get->retrieve('xvid_custom_js', $this->refinery->kindlyTo()->string());
             $customJS = ilInteractiveVideoPlugin::stripSlashesWrapping($customJS);
         }
         $DIC->ui()->mainTemplate()->addOnLoadCode('"' . $customJS . '"');
-        $DIC->ui()->mainTemplate()->addOnLoadCode('console.log('. $customJS .')');
 		$this->edit();
 	}
 
@@ -1920,11 +1924,10 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		if($post->has('comment_time'))
 		{
 			$seconds = $post->retrieve('comment_time', $this->refinery->kindlyTo()->string());
-            if(intval($seconds)){
-                $time->setValueByArray(['comment_time' => (int)$seconds]);
-            }
-
-		}
+            $time->setValueByArray(['comment_time' => (int)$seconds]);
+		} else {
+            $time->setValueByArray(['comment_time' => 0]);
+        }
 		$form->addItem($time);
 
 		$time_end = new ilInteractiveVideoTimePicker($plugin->txt('time_end'), 'comment_time_end');
@@ -1934,7 +1937,9 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
         if($post->has('comment_time_end'))
 		{
             $seconds = $post->retrieve('comment_time_end', $this->refinery->kindlyTo()->int());
-            $time->setValueByArray(['comment_time_end' => (int)$seconds]);
+            $time_end->setValueByArray(['comment_time_end' => (int)$seconds]);
+        } else {
+            $time_end->setValueByArray(['comment_time_end' => 0]);
         }
 		$form->addItem($time_end);
 
