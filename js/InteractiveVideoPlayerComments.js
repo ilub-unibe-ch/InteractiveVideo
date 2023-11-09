@@ -323,6 +323,7 @@ il.InteractiveVideoPlayerComments = (function (scope) {
 			let toolbar = $('.ivToolbar_' + player_id)
 			toolbar.css('display', 'none');
 		}
+
 		if(player_data.enable_comment_stream === "0" || player_data.show_toc_first === "1") {
 			pro.displayCommentsOrToc(false, player_id);
 			pub.buildToc(player_id);

@@ -1,6 +1,4 @@
 <?php
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/VideoSources/interface.ilInteractiveVideoSourceGUI.php';
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/VideoSources/core/SimpleUrl/class.ilInteractiveVideoSimpleUrl.php';
 
 /**
  * Class ilInteractiveVideoSimpleUrlGUI
@@ -61,7 +59,7 @@ class ilInteractiveVideoSimpleUrlGUI implements ilInteractiveVideoSourceGUI
 		$instance->doReadVideoSource($obj->getId());
 		$player->setVariable('PLAYER_ID', $player_id);
 		$player->setVariable('SIMPLE_URL', $instance->getSimpleUrl());
-		$player->setVariable('INTERACTIVE_VIDEO_ID', $id);
+		$player->setVariable('INTERACTIVE_VIDEO_ID', $obj->getId());
 		return $player;
 	}
 
