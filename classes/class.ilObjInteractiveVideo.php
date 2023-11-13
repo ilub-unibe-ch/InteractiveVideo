@@ -545,17 +545,17 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 
             $is_tutor                                   = $row['is_tutor'];
             $is_interactive                         	= $row['is_interactive'];
-            if(!$csv_export) {
-                $is_compulsory                            = $row['compulsory_question'] ? '1' : '0';
-            }
+
+
+            //$is_compulsory                            = $row['compulsory_question'] ? '1' : '0';
 			if($replace_settings_with_text )
 			{
                 $is_tutor			= xvidUtils::yesNoString($row['is_tutor']);
                 $is_interactive		= xvidUtils::yesNoString($row['is_interactive']);
 
-                if(!$csv_export) {
-                    $is_compulsory    = xvidUtils::yesNoString($row['compulsory_question']);
-                }
+
+                //$is_compulsory    = xvidUtils::yesNoString($row['compulsory_question']);
+
 			}
 
             $table_data[$counter]['comment_id']         = $row['cid'];
@@ -571,15 +571,15 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
             $table_data[$counter]['is_tutor']			= $is_tutor;
             $table_data[$counter]['is_interactive']		= $is_interactive;
 
-            if(!$csv_export) {
-                $table_data[$counter]['compulsory']      = $is_compulsory;
-            }
+
+            //$table_data[$counter]['compulsory']      = $is_compulsory;
+
             $table_data[$counter]['type']               = $type;
 			$table_data[$counter]['marker']             = $row['marker'];
 			$table_data[$counter]['is_reply_to']        = $row['is_reply_to'];
-            if(!$csv_export) {
-                $table_data[$counter]['is_table_of_content'] = $row['is_table_of_content'];
-            }
+
+            //$table_data[$counter]['is_table_of_content'] = $row['is_table_of_content'];
+
             $counter++;
         }
 
