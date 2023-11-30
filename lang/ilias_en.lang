@@ -102,7 +102,7 @@ already_answered#:#Question already answered.
 reflection#:#Reflective question
 answers#:#Answers
 sure_update_question#:#Are you sure, you want to save the question? Existing user results will be deleted! 
-question_type_info#:#You can choose between one of three available question types: a single choice, a multiple choice or a self-reflection question. Self-reflection questions do not have answer options and will be marked as "passed" once they have been shown to a user at least once.
+question_type_info#:#You can choose between one of three available question types: a single choice, a multiple choice or a self-reflexion quertion. Self-reflexion questions do not have answer options and will be marked as "passed" once they have been shown to a user at least once.
 is_jump_correct_info#:#In case the question was answered correctly, you can select a jump label (time stamp) within the video to which the user can jump using a button. This button will be shown along with the feedback text.
 is_jump_wrong_info#:#In case the question was answered incorrectly, you can select a jump label (time stamp) within the video to which the user can jump using a button. This button will be shown along with the feedback text.
 learning_recommendation#:#Learning recommendation within the video at
@@ -118,7 +118,7 @@ time_end#:#End Time
 show_response_frequency#:#Show response frequencies
 show_response_frequency_info#:#After answering the question, the response frequencies of all answering options are shown as percentages beneath each answering option.
 type#:#Type
-title_of_question#:#Question Title
+title_of_question#:#Questiontitle
 endtime_warning#:#The endtime you selected is smaller than the actual time
 screen_info#:#Use this screen to create and manage questions and comments. Caution: Interactive questions will NOT be shown on this screen. In order to see them during playback, go to the tab "Content".
 show_correct_icon#:#Mark feedback visually as 'correct answer'
@@ -227,9 +227,6 @@ long_title#:#Title
 subtitle_removed#:#Subtitle removed
 sure_delete_subtitle#:#Are you sure you want to remove this subtitle?
 you_need_a_short_title#:#You need to provide a short title!
-no_toolbar#:#Deactivate toolbar
-no_toolbar_info#:#No toolbar with filters will be shown
-save_without_correct_detail#:#You have neither selected a reflective question nor enabled the option "Neutral answers". Are you sure you want to save the question without selecting a correct answer?
 show_toolbar#:#Show Toolbar
 show_toolbar_info#:#Displays the toolbar in the upper right corner of the user's screen with the following options: video size setting, author filter, show only comments up to the playhead.
 save_without_correct_detail#:#You don't have selected a reflection question or have you selected a question without correct answers, are you sure you want to save the question?
@@ -265,5 +262,4 @@ layout_filter#:#Layout
 beta#:#Beta
 activate_marker#:#Activate marker
 activate_marker_info#:#Activate marker
-no_toolbar#:#Deactivate toolbar
-no_toolbar_info#:#No toolbar with filters will be shown
+no_comment_id_given#:#Something went wrong, the comment id is missing
