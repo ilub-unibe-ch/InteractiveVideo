@@ -1,10 +1,8 @@
 <?php
 /* Copyright (c) 1998-2015 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-
 use ILIAS\Refinery\Factory;
 use ILIAS\HTTP\Services;
-
 
 /**
  * Class ilObjInteractiveVideo
@@ -221,18 +219,12 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 		{
             if($this->http->wrapper()->post()->has('source_id')) {
                 $post_src_id =  ilInteractiveVideoPlugin::stripSlashesWrapping($this->http->wrapper()->post()->retrieve('source_id', $this->refinery->kindlyTo()->string()));
-            }
-
-			if(($post_src_id == null || $post_src_id == '') && $this->source_id != null)
-			{
-				$src_id = $this->source_id;
+                $src_id = $post_src_id;
+                $from_post = true;
+            } else {
+                $src_id = $this->source_id;
                 $from_post = false;
-			}
-			else
-			{
-				$src_id = $post_src_id;
-				$from_post = true;
-			}
+            }
 
 			if($src_id != '')
 			{
@@ -504,7 +496,6 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
      * @param bool $strip_tags
      * @return array
      */
-
 	public function getCommentsTableData(bool $replace_with_text = false, bool $empty_string_if_null = false, bool $replace_settings_with_text = false, bool $strip_tags = false) : array
     {
 		$res = $this->db->queryF('
@@ -548,17 +539,12 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 
             $is_tutor                                   = $row['is_tutor'];
             $is_interactive                         	= $row['is_interactive'];
-
-
             //$is_compulsory                            = $row['compulsory_question'] ? '1' : '0';
 			if($replace_settings_with_text )
 			{
                 $is_tutor			= xvidUtils::yesNoString($row['is_tutor']);
                 $is_interactive		= xvidUtils::yesNoString($row['is_interactive']);
-
-
                 //$is_compulsory    = xvidUtils::yesNoString($row['compulsory_question']);
-
 			}
 
             $table_data[$counter]['comment_id']         = $row['cid'];
@@ -573,15 +559,13 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
             $table_data[$counter]['comment_text']       = $comment_text;
             $table_data[$counter]['is_tutor']			= $is_tutor;
             $table_data[$counter]['is_interactive']		= $is_interactive;
-
-
-            //$table_data[$counter]['compulsory']      = $is_compulsory;
-
+             //$table_data[$counter]['compulsory']      = $is_compulsory
             $table_data[$counter]['type']               = $type;
 			$table_data[$counter]['marker']             = $row['marker'];
 			$table_data[$counter]['is_reply_to']        = $row['is_reply_to'];
-
-            //$table_data[$counter]['is_table_of_content'] = $row['is_table_of_content'];
+            if($replace_settings_with_text === false && $strip_tags === false) {
+                $table_data[$counter]['is_table_of_content'] = $row['is_table_of_content'];
+            }
 
             $counter++;
         }
@@ -631,6 +615,7 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 			$table_data[$counter]['title']		= $row['comment_title'];
 			//	$table_data[$counter]['user_id']			= $row['user_id'];
 			$table_data[$counter]['comment_text']		= $row['comment_text'];
+			$table_data[$counter]['is_table_of_content']= $row['is_table_of_content'];
 			if($row['is_private'] == 1)
 			{
 				$table_data[$counter]['is_private'] = ilInteractiveVideoPlugin::getInstance()->txt('private');

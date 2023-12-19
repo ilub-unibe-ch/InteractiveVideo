@@ -87,7 +87,11 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	{
 		$my_tpl = new ilTemplate('tpl.time_picker.html', true, true, 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/');
 		$value = $this->getValue();
-		$my_tpl->setVariable("VALUE", $this->getTimeStringFromSeconds($value));
+        if($value === null) {
+            $value = 0;
+        }
+
+		$my_tpl->setVariable("VALUE", $value);
 		$my_tpl->setVariable("ID", $this->getId());
 
 		return $my_tpl->get();
@@ -135,6 +139,9 @@ class ilInteractiveVideoTimePicker extends ilSubEnabledFormPropertyGUI
 	 */
 	public static function getTimeStringFromSeconds($seconds): string
 	{
-		return gmdate('H:i:s', $seconds);
+        $hour = floor($seconds / 3600);
+        $min = floor($seconds / 60 % 60);
+        $sec = floor($seconds % 60);
+        return sprintf('%02d:%02d:%02d', $hour, $min, $sec);
 	}
 }

@@ -112,6 +112,8 @@ class SimpleChoiceQuestionFormEditGUI
 			$seconds = $_POST['comment_time'];
 			$time->setValueByArray(['comment_time' => (int)$seconds]);
 		}
+
+
 		$form->addItem($time);
 
 		$repeat_question = new ilCheckboxInputGUI($this->plugin->txt('repeat_question'), 'repeat_question');
@@ -165,7 +167,7 @@ class SimpleChoiceQuestionFormEditGUI
 		$question_text->setRequired(true);
 		$form->addItem($question_text);
 
-		#$this->appendImageUploadForm($this->plugin, $form);
+		$this->appendImageUploadForm($this->plugin, $form);
 
 		$neutral_type         = new ilSelectInputGUI($this->plugin->txt('neutral_type'), 'neutral_type');
 		$neutral_type_options = [
@@ -192,7 +194,10 @@ class SimpleChoiceQuestionFormEditGUI
 
         $comment_id_post = $DIC->http()->wrapper()->post()->has('comment_id');
         if($comment_id_post) {
-            $comment_id_post = $DIC->http()->wrapper()->post()->retrieve('comment_id', $DIC->refinery()->kindlyTo()->int());
+            $comment_id_post = $DIC->http()->wrapper()->post()->retrieve('comment_id', $DIC->refinery()->kindlyTo()->string());
+            if($comment_id_post !== '') {
+                $comment_id_post = (int) $comment_id_post;
+            }
         }
         $comment_id_get = $DIC->http()->wrapper()->query()->has('comment_id');
         if($comment_id_get) {
