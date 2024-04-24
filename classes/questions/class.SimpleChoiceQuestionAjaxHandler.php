@@ -139,7 +139,7 @@ class SimpleChoiceQuestionAjaxHandler
     /**
      * @param int $qid
      */
-	protected function getBestSolution(int $qid)
+	protected function getBestSolution(int $qid): string
     {
         $best_solution = '';
 	    $answers = $this->getAnswersForQuestionId($qid, false);
@@ -153,15 +153,14 @@ class SimpleChoiceQuestionAjaxHandler
 	 * @param $ref_id
 	 * @return string
 	 */
-    /**
-     * @param $ref_id
-     * @return string
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
-     * @throws ilSystemStyleException
-     * @throws ilTemplateException
-     */
-	protected function getLinkIfReadAccessForObjectByRefId($ref_id)
+	/**
+	 * @param $ref_id
+	 * @throws ilDatabaseException
+	 * @throws ilObjectNotFoundException
+	 * @throws ilSystemStyleException
+	 * @throws ilTemplateException
+	 */
+	protected function getLinkIfReadAccessForObjectByRefId($ref_id): string
 	{
 		if($ref_id != null && $ref_id != 0)
 		{
@@ -219,6 +218,20 @@ class SimpleChoiceQuestionAjaxHandler
 		$question_type  = 0;
 		$question_id    = 0;
 		$question_image = null;
+        $limit_attempts = 0;
+        $is_jump_correct = 0;
+        $show_correct_icon = 0;
+        $jump_correct_ts = 0;
+        $show_wrong_icon = 0;
+        $is_jump_wrong = 0;
+        $jump_wrong_ts = 0;
+        $show_response_frequency = 0;
+        $show_reflection_question_comment = 0;
+        $compulsory = 0;
+        $show_best_solution = 0;
+        $show_best_solution_text = 0;
+        $repeat_question = 0;
+        $time = 0;
 
 		while($row = $ilDB->fetchAssoc($res))
 		{

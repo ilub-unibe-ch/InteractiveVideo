@@ -1,5 +1,4 @@
 <?php
-require_once 'Customizing/global/plugins/Services/Repository/RepositoryObject/InteractiveVideo/VideoSources/interface.ilInteractiveVideoSource.php';
 /**
  * Class ilInteractiveVideoSourceFactory
  * @author Guido Vollbach <gvollbach@databay.de>
@@ -109,7 +108,6 @@ class ilInteractiveVideoSourceFactory
 			}
 			if($file->getExtension() === 'php' && $file->getFilename() !== 'version.php'  && $file->getFilename() !== 'dbupdate.php')
 			{
-				require_once $file;
 				$class      = str_replace(array('class.', '.php'), '', $file->getBasename());
 				$reflection = new ReflectionClass($class);
 				if( !$reflection->isAbstract() && $reflection->implementsInterface($interface))
@@ -129,7 +127,10 @@ class ilInteractiveVideoSourceFactory
 	 */
 	public function isActive($class)
 	{
-		return (bool) $this->sources_settings[$class]['active'];
+        if(isset($this->sources_settings[$class]['active'])) {
+            return (bool) $this->sources_settings[$class]['active'];
+        }
+        return false;
 	}
 
 	/**
@@ -204,6 +205,11 @@ class ilInteractiveVideoSourceFactory
 
 		foreach($settings['settings'] as $key => $value)
 		{
+            $source_settings = 0;
+            if(isset($this->sources_settings[$key]['db_update'])) {
+                $source_settings = $this->sources_settings[$key]['db_update'];
+            }
+
             if(strlen($key) > 0
                 && array_key_exists($key, $mapping)
                 && array_key_exists('id', $mapping[$key]))
@@ -211,7 +217,7 @@ class ilInteractiveVideoSourceFactory
                 $ilDB->insert(self::TABLE_NAME, array('plugin_name'		=> array('text', $key),
                     'is_activated'	=> array('integer', $value),
                     'plugin_id'		=> array('text', $mapping[$key]['id']),
-                    'db_update'		=> array('text', $this->sources_settings[$key]['db_update']),
+                    'db_update'		=> array('text', $source_settings),
                     'class_path'	=> array('text', $mapping[$key]['path'])
                 ));
             } else if($key === 'activate_marker'){

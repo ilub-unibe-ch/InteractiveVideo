@@ -8,11 +8,12 @@ use ILIAS\Refinery\ConstraintViolationException;
 /**
  * Class ilObjInteractiveVideoGUI
  * @author               Nadia Ahmad <nahmad@databay.de>
- * @ilCtrl_isCalledBy    ilObjInteractiveVideoGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI, ilContainerPageGUI, ilPageEditorServerAdapterGUI
+ * @ilCtrl_isCalledBy    ilObjInteractiveVideoGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI, ilLMEditorGUI
  * @ilCtrl_Calls         ilObjInteractiveVideoGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilRepositorySearchGUI, ilPublicUserProfileGUI, ilCommonActionDispatcherGUI, ilMDEditorGUI
  * @ilCtrl_Calls         ilObjInteractiveVideoGUI: ilInteractiveVideoLearningProgressGUI
  * @ilCtrl_Calls         ilObjInteractiveVideoGUI: ilPropertyFormGUI
  * @ilCtrl_Calls         ilObjInteractiveVideoGUI: ilInteractiveVideoExportGUI
+ * @ilCtrl_Calls         ilObjInteractiveVideoGUI: ilLearningProgressGUI
  */
 class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopItemHandling
 {
@@ -38,7 +39,6 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
         /** @var Container $DIC */
         global $DIC;
         $this->http = $DIC->http();
-
         parent::__construct($a_ref_id, $a_id_type, $a_parent_node_id);
     }
 	protected function appendImageUploadForm(ilInteractiveVideoPlugin $plugin, ilPropertyFormGUI $form): void
@@ -258,6 +258,24 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$this->addHeaderAction();
 	}
 
+    public function ajaxCallPluginHelper() {
+        $xvid_ctrl = '';
+        $xvid_function = '';
+
+        $get = $this->http->wrapper()->query();
+        if($get->has('xvid_plugin_ctrl')){
+            $xvid_ctrl = $get->retrieve('xvid_plugin_ctrl', $this->refinery->kindlyTo()->string());
+            $xvid_ctrl = new $xvid_ctrl();
+        }
+        if($get->has('xvid_plugin_function')){
+            $xvid_function = $get->retrieve('xvid_plugin_function', $this->refinery->kindlyTo()->string());
+        }
+
+        if($xvid_ctrl !== '' && $xvid_function !== '' && method_exists($xvid_ctrl, $xvid_function)) {
+            $xvid_ctrl->$xvid_function();
+        }
+    }
+
     /**
      * @throws ilCtrlException
      * @throws ilSystemStyleException
@@ -297,6 +315,9 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
      */
 	protected function buildContentTemplate(bool $light_version = false): ilTemplate
 	{
+		/**
+		 * @var $tpl    ilTemplate
+		 */
 		global $tpl, $DIC;
 		$plugin = ilInteractiveVideoPlugin::getInstance();
         $DIC->ui()->mainTemplate()->addJavaScript($this->plugin->getDirectory() . '/js/InteractiveVideoQuestionCreator.js');
@@ -675,9 +696,9 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		$config_tpl->setVariable('QUESTION_GET_URL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'getQuestionPerAjax', '', true));
 		$config_tpl->setVariable('QUESTION_POST_URL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'postAnswerPerAjax', '', true));
 		$config_tpl->setVariable('POST_COMMENT_URL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'postComment', '', true));
-        $config_tpl->setVariable('GET_COMMENT_MARKER_MODAL', $this->ctrl->getLinkTarget($this, 'getCommentAndMarkerForm', '', true));
-        $config_tpl->setVariable('GET_CHAPTER_MODAL', $this->ctrl->getLinkTarget($this, 'getChapterForm', '', true));
-        $config_tpl->setVariable('GET_QUESTION_CREATION_MODAL', $this->ctrl->getLinkTarget($this, 'showTutorInsertQuestionFormAjax', '', true));
+        $config_tpl->setVariable('GET_COMMENT_MARKER_MODAL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'getCommentAndMarkerForm', '', true));
+        $config_tpl->setVariable('GET_CHAPTER_MODAL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'getChapterForm', '', true));
+        $config_tpl->setVariable('GET_QUESTION_CREATION_MODAL', $this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjInteractiveVideoGUI'], 'showTutorInsertQuestionFormAjax', '', true));
         $this->ctrl->setParameterByClass('ilObjInteractiveVideoGUI', 'ref_id', $org_ref_id);
 		$config_tpl->setVariable('SEND_BUTTON', $plugin->txt('send'));
 		$config_tpl->setVariable('CLOSE_BUTTON', $plugin->txt('close'));
@@ -1611,7 +1632,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
             {
                 if($this->checkPermissionBool('write') || $this->checkPermissionBool('read_learning_progress'))
                 {
-                    if($this->object->getLearningProgressMode() != ilObjInteractiveVideo::LP_MODE_DEACTIVATED)
+                    if(method_exists($this->object, 'getLearningProgressMode') && $this->object->getLearningProgressMode() != ilObjInteractiveVideo::LP_MODE_DEACTIVATED)
                     {
                         $ilTabs->addTab('learning_progress', $this->lng->txt('learning_progress'), $this->ctrl->getLinkTargetByClass('ilInteractiveVideoLearningProgressGUI', 'showLpUsers'));
                     }
@@ -1794,7 +1815,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
      * @param $marker
      * @return string|string[]
      */
-    protected function cleanMarker($marker): string
+    protected function cleanMarker(string $marker): string
     {
         $marker = '<svg>'.trim($marker).'</svg>';
         $marker = xvidUtils::secureSvg($marker);
@@ -2600,11 +2621,11 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-     * @param ilPropertyFormGUI|null $form
-     * @throws ilCtrlException
-     * @throws ilTemplateException
-     * @throws ilSystemStyleException
-     */
+	 * @param \ilPropertyFormGUI $form
+	 * @throws ilCtrlException
+	 * @throws ilTemplateException
+	 * @throws ilSystemStyleException
+	 */
 	public function editMyComment(ilPropertyFormGUI $form = NULL): void
 	{
 		/**
@@ -2633,11 +2654,11 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-     * @param ilPropertyFormGUI|null $form
-     * @throws ilCtrlException
-     * @throws ilTemplateException
-     * @throws ilSystemStyleException
-     */
+	 * @param \ilPropertyFormGUI $form
+	 * @throws ilCtrlException
+	 * @throws ilTemplateException
+	 * @throws ilSystemStyleException
+	 */
 	public function editComment(ilPropertyFormGUI $form = NULL): void
 	{
 		/**
@@ -2650,7 +2671,10 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		if(!($form instanceof ilPropertyFormGUI))
 		{
 			$form = $this->initCommentForm();
-			$form->setValuesByArray($this->getCommentFormValues(), true);
+            $comments = $this->getCommentFormValues();
+            if($comments !== null) {
+                $form->setValuesByArray($comments, true);
+            }
 		}
 
         $this->addJavascriptAndCSSToTemplate($DIC->ui()->mainTemplate());
@@ -2669,9 +2693,9 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-     * @param ilPropertyFormGUI|null $form
-     * @throws ilCtrlException
-     */
+	 * @param \ilPropertyFormGUI $form
+	 * @throws ilCtrlException
+	 */
 	public function editChapter(ilPropertyFormGUI $form = NULL): void
 	{
 		/**
@@ -2684,7 +2708,10 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		if(!($form instanceof ilPropertyFormGUI))
 		{
 			$form = $this->initChapterForm();
-			$form->setValuesByArray($this->getChapterFomValues(), true);
+            $chapters = $this->getChapterFomValues();
+            if($chapters !== null) {
+                $form->setValuesByArray($chapters, true);
+            }
 		}
         $this->addJavascriptAndCSSToTemplate($DIC->ui()->mainTemplate());
 		$form->setFormAction($this->ctrl->getFormAction($this, 'updateChapter'));
@@ -2816,15 +2843,13 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 		return $values;
 	}
 #endregion
-
-#region QUESTIONS
-    /**
-     * @return ilPropertyFormGUI
-     * @throws ilCtrlException
-     * @throws ilSystemStyleException
-     * @throws ilTemplateException
-     */
-	public function initQuestionForm()
+	#region QUESTIONS
+	/**
+	 * @throws ilCtrlException
+	 * @throws ilSystemStyleException
+	 * @throws ilTemplateException
+	 */
+	public function initQuestionForm(): \ilPropertyFormGUI
 	{
 		$plugin = ilInteractiveVideoPlugin::getInstance();
         $simple_question = new SimpleChoiceQuestionFormEditGUI($this->plugin, $this->object);
@@ -2857,11 +2882,11 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-     * @param ilPropertyFormGUI|null $form
-     * @throws ilCtrlException
-     * @throws ilSystemStyleException
-     * @throws ilTemplateException
-     */
+	 * @param \ilPropertyFormGUI $form
+	 * @throws ilCtrlException
+	 * @throws ilSystemStyleException
+	 * @throws ilTemplateException
+	 */
 	public function showTutorInsertQuestionForm(ilPropertyFormGUI $form = NULL): void
 	{
 		/**
@@ -2929,11 +2954,11 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-     * @param ilPropertyFormGUI|null $form
-     * @throws ilCtrlException
-     * @throws ilSystemStyleException
-     * @throws ilTemplateException
-     */
+	 * @param \ilPropertyFormGUI $form
+	 * @throws ilCtrlException
+	 * @throws ilSystemStyleException
+	 * @throws ilTemplateException
+	 */
 	public function editQuestion(ilPropertyFormGUI $form = NULL): void
 	{
 		/**
@@ -2958,10 +2983,10 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 	}
 
     /**
-	 * @return array|null
-     * @throws ilTemplateException
+	 * @return mixed[]
+	 * @throws ilTemplateException
 	 */
-	private function getQuestionFormValues(int $comment_id = 0)
+	private function getQuestionFormValues(int $comment_id = 0): array
 	{
 	    $values = [];
 
@@ -3181,7 +3206,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 
         $question->deleteQuestionsIdByCommentId($comment_id);
         $qid = $question->create();
-
+       # $question->editAnswersForQuestion($qid);
 	}
 
     private function getValueFromFormOrArray(string $key, $form)
@@ -3782,7 +3807,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 			$ilCtrl->saveParameterByClass($class_name, 'xvid_referrer_ref_id');
             $xvid_referrer = '';
             if($get->has('xvid_referrer')){
-                $xvid_referrer = $get->retrieve('xvid_referrer', $DIC->refinery->kindlyTo()->string());
+                $xvid_referrer = $get->retrieve('xvid_referrer', $DIC->refinery()->kindlyTo()->string());
             }
 			$ilCtrl->setParameterByClass($class_name, 'xvid_referrer', urlencode($xvid_referrer));
 			$ilCtrl->redirectByClass(["ilobjplugindispatchgui", $class_name], "");
@@ -3793,7 +3818,7 @@ class ilObjInteractiveVideoGUI extends ilObjectPluginGUI implements ilDesktopIte
 			$ilCtrl->setParameterByClass($class_name, "ref_id", $ref_id);
 			$ilCtrl->saveParameterByClass($class_name, 'xvid_referrer_ref_id');
             if($get->has('xvid_referrer')){
-                $xvid_referrer = $get->retrieve('xvid_referrer', $DIC->refinery->kindlyTo()->string());
+                $xvid_referrer = $get->retrieve('xvid_referrer', $DIC->refinery()->kindlyTo()->string());
             }
 			$ilCtrl->setParameterByClass($class_name, 'xvid_referrer', urlencode($xvid_referrer));
 			$ilCtrl->redirectByClass(["ilobjplugindispatchgui", $class_name], "infoScreen");
