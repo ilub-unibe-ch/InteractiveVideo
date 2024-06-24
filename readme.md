@@ -1,9 +1,7 @@
-# Development branch NOT for production use!
-
 - [InteractiveVideo](#interactivevideo)
   * [ILIAS compatibility](#ilias-compatibility)
   * [Important notice](#important-notice)
-  * [Changes in Version 3.0.0](#changes-in-version-300)
+  * [Changes in Version 2.5.1](#changes-in-version-251)
   * [Repositories connected to the InteractiveVideo Plugin](#repositories-connected-to-the-interactivevideo-plugin)
   * [Installation Instructions](#installation-instructions)
     + [Workaround patch for making the Interactive Videos work with the Web Access Checker](#workaround-patch-for-making-the-interactive-videos-work-with-the-web-access-checker)
@@ -23,16 +21,17 @@
 ILIAS Interactive Video Plugin
 
 ## ILIAS compatibility
+- The branch r8 is compatible with ILIAS 8
 - If you are looking for a ILIAS 6 or ILIAS 7 compatible version of the plugin, please use the master branch.
 - If you are looking for a ILIAS 5.2-5.4 compatible version, please use the release_2 branch.
 - For even older ILIAS versions, please use the release_1 branch.
- 
-## Changes in version 3.0.0
-1. [Reply to comments](https://www.ilias.de/docu/goto_docu_wiki_wpage_4967_1357.html)
-2. Changed video library to [plyr](https://github.com/sampotts/plyr)
-3. Development Feature: [SVG marker for videos](https://www.ilias.de/docu/goto_docu_wiki_wpage_4971_1357.html)
 
- ## Changes in Version 2.5.1
+## Changes in version 3.0.0
+1. [SVG marker for videos](https://www.ilias.de/docu/goto_docu_wiki_wpage_4971_1357.html)
+2. [Reply to comments](https://www.ilias.de/docu/goto_docu_wiki_wpage_4967_1357.html)
+3. Changed video library to [plyr](https://github.com/sampotts/plyr)
+
+## Changes in Version 2.5.1
 * Compulsory questions
 * Table of contents
 * Automatic scrolling if show all comments is active
