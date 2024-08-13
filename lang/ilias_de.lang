@@ -280,3 +280,7 @@ please_create_object_first#:#Um ein Opencast Video nutzen zu können, müssen Si
 meo#:#Vimeo
 meo_vimeo_info#:#Geben Sie bitte eine Vimeo-URL ein.
 meo_url#:#Vimeo-URL
+event_modal_heading#:#Bestehendes Video aus Opencast einfügen
+event_date#:#Datum
+event_series#:#Serie
+event_presenter#:#Referent/in

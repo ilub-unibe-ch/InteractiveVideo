@@ -281,3 +281,7 @@ please_create_object_first#:#To use an Opencast video, you must first create an 
 meo#:#Vimeo
 meo_vimeo_info#:#Please insert a Vimeo URL.
 meo_url#:#Vimeo URL
+event_modal_heading#:#Insert existing video from Opencast
+event_date#:#Datie
+event_series#:#Series
+event_presenter#:#Presenter
