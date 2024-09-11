@@ -81,8 +81,11 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 	 * @param $src_id
 	 * @return ilInteractiveVideoSource
 	 */
-	public function getVideoSourceObject($src_id) : ilInteractiveVideoSource
+	public function getVideoSourceObject($src_id) : ?ilInteractiveVideoSource
     {
+        if($src_id === '') {
+            $this->log->error(sprintf('No source id give for InteractiveVideo object with the id %s', $this->id));
+        }
 		$factory = new ilInteractiveVideoSourceFactory();
 		if($this->video_source_object === null)
 		{
@@ -96,6 +99,10 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 			}
 		}
 
+        if($this->video_source_object === null) {
+            $this->log->error(sprintf('No valid source found for InteractiveVideo object with the id %s and source_id %s', $this->id, $this->source_id));
+        }
+
 		return $this->video_source_object;
 	}
 
@@ -108,27 +115,27 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 		);
 		$row = $this->db->fetchAssoc($res);
 		
-		$this->setIsAnonymized($row['is_anonymized']);
-		$this->setIsRepeat($row['is_repeat']);
-		$this->setIsPublic($row['is_public']);
-		$this->setOnline((bool)$row['is_online']);
-		$this->setIsChronologic($row['is_chronologic']);
-		$this->setSourceId($row['source_id']);
-		$this->setTaskActive($row['is_task']);
+		$this->setIsAnonymized($row['is_anonymized'] ?: 0);
+		$this->setIsRepeat($row['is_repeat'] ?: 0);
+		$this->setIsPublic($row['is_public'] ?: 0);
+		$this->setOnline((bool) $row['is_online'] || false);
+		$this->setIsChronologic($row['is_chronologic']  ?: 0);
+		$this->setSourceId($row['source_id'] ?: '');
+		$this->setTaskActive($row['is_task'] ?: 0);
 		$this->setTask($row['task'] ?: '');
-		$this->setEnableComment($row['enable_comment']);
-		$this->setEnableToolbar($row['show_toolbar']);
-		$this->setAutoResumeAfterQuestion($row['auto_resume']);
-		$this->setFixedModal($row['fixed_modal']);
-		$this->setShowTocFirst($row['show_toc_first']);
-		$this->setEnableCommentStream($row['disable_comment_stream']);
-		$this->setNoCommentStream($row['no_comment_stream']);
-		$this->setVideoMode($row['video_mode']);
-		$this->setMarkerForStudents($row['marker_for_students']);
-        $this->setLayoutWidth($row['layout_width']);
+		$this->setEnableComment($row['enable_comment'] ?: 0);
+		$this->setEnableToolbar($row['show_toolbar'] ?: 0);
+		$this->setAutoResumeAfterQuestion($row['auto_resume'] ?: 0);
+		$this->setFixedModal($row['fixed_modal'] ?: 0);
+		$this->setShowTocFirst($row['show_toc_first'] ?: 0);
+		$this->setEnableCommentStream($row['disable_comment_stream'] ?: 0);
+		$this->setNoCommentStream($row['no_comment_stream'] ?: 0);
+		$this->setVideoMode($row['video_mode'] ?: 0);
+		$this->setMarkerForStudents($row['marker_for_students'] ?: 0);
+        $this->setLayoutWidth($row['layout_width'] ?: 0);
         $this->video_source_object = null;
 		$this->getVideoSourceObject($row['source_id']);
-		$this->setLearningProgressMode($row['lp_mode']);
+		$this->setLearningProgressMode($row['lp_mode'] ?: 0);
 
         $db_settings = new ilSetting(('xvid'));
         if((int) $db_settings->get('xvid_activate_marker') === 1)
@@ -399,11 +406,13 @@ class ilObjInteractiveVideo extends ilObjectPlugin implements ilLPStatusPluginIn
 	{
         if (((!$this->referenced) || ($this->countReferences() == 1)) && $this->video_source_object !== null ) {
             $this->getVideoSourceObject($this->getSourceId());
-            $this->video_source_object->beforeDeleteVideoSource($this->getId());
-            self::deleteComments(self::getCommentIdsByObjId($this->getId(), false));
+            if($this->getId() !== null) {
+                $this->video_source_object->beforeDeleteVideoSource($this->getId());
+                self::deleteComments(self::getCommentIdsByObjId($this->getId(), false));
 
-            $this->db->manipulate('DELETE FROM ' . self::TABLE_NAME_OBJECTS . ' WHERE obj_id = ' . $this->db->quote($this->getId(), 'integer'));
-            $this->deleteMetaData();
+                $this->db->manipulate('DELETE FROM ' . self::TABLE_NAME_OBJECTS . ' WHERE obj_id = ' . $this->db->quote($this->getId(), 'integer'));
+                $this->deleteMetaData();
+            }
         }
         return true;
 	}
