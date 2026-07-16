@@ -374,7 +374,7 @@ class SimpleChoiceQuestion
 			$this->setIsJumpWrong($row['is_jump_wrong']);
 			$this->setShowWrongIcon($row['show_wrong_icon']);
 			$this->setJumpWrongTs($row['jump_wrong_ts']);
-			$this->setCompulsoryQuestion($row['compulsory_question']);
+			$this->setCompulsoryQuestion((int)$row['compulsory_question']);
 			$this->setShowResponseFrequency($row['show_response_frequency']);
 			$this->setShowBestSolution($row['show_best_solution']);
 			$this->setShowBestSolutionText($row['show_best_solution_text']);
